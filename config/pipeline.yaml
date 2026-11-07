@@ -1,0 +1,10 @@
+# What is forecast, how far ahead, and how it is evaluated.
+series: [Subway, Bus, LIRR, MNR, BT]    # MTA modes; BT = bridge and tunnel traffic
+horizon: 14                             # days ahead
+train_start: "2021-06-01"               # skip the 2020-21 collapse: weekly patterns are unstable there
+backtest:
+  first_origin: "2023-01-01"
+  step_days: 28                         # a new forecast origin every 28 days
+interval_level: 0.8                     # nominal coverage of prediction intervals
+models: [naive, seasonal_naive, seasonal_median4, prophet, xgboost, ensemble]
+reference_model: seasonal_naive         # skill is measured relative to this

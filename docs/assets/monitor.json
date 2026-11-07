@@ -1,0 +1,282 @@
+{
+ "k": 0.5,
+ "tuning_window": [
+  "2023-01-01",
+  "2024-06-30"
+ ],
+ "evaluation_start": "2024-07-01",
+ "series": {
+  "Subway": {
+   "h": 24.5,
+   "alarms_out_of_sample": [
+    {
+     "date": "2026-01-26",
+     "direction": "down"
+    },
+    {
+     "date": "2026-02-23",
+     "direction": "down"
+    }
+   ],
+   "false_alarm_rate_per_year": 0.8543859649122808,
+   "tuning_target_per_year": 1.0,
+   "injection": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 7.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.4166666666666667,
+     "median_delay_days": 13.5
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.08333333333333333,
+     "median_delay_days": 15.5
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.6666666666666666,
+     "median_delay_days": 12.5
+    }
+   ],
+   "recent_alarms": [],
+   "last_data_date": "2026-11-03"
+  },
+  "Bus": {
+   "h": 16.0,
+   "alarms_out_of_sample": [
+    {
+     "date": "2024-09-17",
+     "direction": "up"
+    },
+    {
+     "date": "2024-09-24",
+     "direction": "up"
+    },
+    {
+     "date": "2025-01-22",
+     "direction": "up"
+    },
+    {
+     "date": "2026-01-25",
+     "direction": "down"
+    },
+    {
+     "date": "2026-01-27",
+     "direction": "down"
+    },
+    {
+     "date": "2026-02-04",
+     "direction": "down"
+    },
+    {
+     "date": "2026-02-23",
+     "direction": "down"
+    }
+   ],
+   "false_alarm_rate_per_year": 2.9903508771929825,
+   "tuning_target_per_year": 1.0,
+   "injection": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 0.9583333333333334,
+     "median_delay_days": 7.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.25,
+     "median_delay_days": 11.5
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.25,
+     "median_delay_days": 17.5
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.7083333333333334,
+     "median_delay_days": 11.0
+    }
+   ],
+   "recent_alarms": [],
+   "last_data_date": "2026-11-03"
+  },
+  "LIRR": {
+   "h": 19.5,
+   "alarms_out_of_sample": [
+    {
+     "date": "2026-01-25",
+     "direction": "down"
+    },
+    {
+     "date": "2026-01-26",
+     "direction": "down"
+    },
+    {
+     "date": "2026-02-24",
+     "direction": "down"
+    },
+    {
+     "date": "2026-03-22",
+     "direction": "up"
+    },
+    {
+     "date": "2026-05-19",
+     "direction": "down"
+    },
+    {
+     "date": "2026-06-08",
+     "direction": "up"
+    },
+    {
+     "date": "2026-09-27",
+     "direction": "down"
+    }
+   ],
+   "false_alarm_rate_per_year": 2.9833722287047837,
+   "tuning_target_per_year": 1.0,
+   "injection": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 6.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.625,
+     "median_delay_days": 13.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.16666666666666666,
+     "median_delay_days": 18.5
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.625,
+     "median_delay_days": 13.0
+    }
+   ],
+   "recent_alarms": [
+    {
+     "date": "2026-09-27",
+     "direction": "down"
+    }
+   ],
+   "last_data_date": "2026-11-05"
+  },
+  "MNR": {
+   "h": 23.5,
+   "alarms_out_of_sample": [
+    {
+     "date": "2026-01-25",
+     "direction": "down"
+    },
+    {
+     "date": "2026-01-26",
+     "direction": "down"
+    },
+    {
+     "date": "2026-02-23",
+     "direction": "down"
+    },
+    {
+     "date": "2026-03-22",
+     "direction": "up"
+    }
+   ],
+   "false_alarm_rate_per_year": 1.704784130688448,
+   "tuning_target_per_year": 1.0,
+   "injection": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 8.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.4166666666666667,
+     "median_delay_days": 15.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.08333333333333333,
+     "median_delay_days": 13.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.4583333333333333,
+     "median_delay_days": 14.0
+    }
+   ],
+   "recent_alarms": [],
+   "last_data_date": "2026-11-05"
+  },
+  "BT": {
+   "h": 24.5,
+   "alarms_out_of_sample": [
+    {
+     "date": "2026-01-26",
+     "direction": "down"
+    },
+    {
+     "date": "2026-02-23",
+     "direction": "down"
+    }
+   ],
+   "false_alarm_rate_per_year": 0.852392065344224,
+   "tuning_target_per_year": 1.0,
+   "injection": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 5.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.875,
+     "median_delay_days": 11.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.16666666666666666,
+     "median_delay_days": 17.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.9583333333333334,
+     "median_delay_days": 11.0
+    }
+   ],
+   "recent_alarms": [],
+   "last_data_date": "2026-11-05"
+  }
+ },
+ "live": {
+  "n_forecast_files": 1,
+  "status": "no live forecasts have matured yet"
+ }
+}

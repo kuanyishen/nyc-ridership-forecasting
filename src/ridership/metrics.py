@@ -74,3 +74,14 @@ def interval_metrics(bt: pd.DataFrame, level: float) -> pd.DataFrame:
     d["inside"] = (d["y_true"] >= d["lo"]) & (d["y_true"] <= d["hi"])
     d["rel_width"] = (d["hi"] - d["lo"]) / d["y_pred"]
     return d.groupby(["series", "model"]).agg(n=("inside", "size"), coverage=("inside", "mean"), rel_width=("rel_width", "mean")).reset_index().assign(nominal=level)
+
+
+def origin_ci(bt: pd.DataFrame, series: str, model: str, *, n_boot: int = 2000, seed: int = 0) -> tuple[float, float, float]:
+    """WAPE of one model on one series with a 95% CI from resampling origins."""
+    sub = bt[(bt["series"] == series) & (bt["model"] == model)].copy()
+    sub["abs_err"] = (sub["y_pred"] - sub["y_true"]).abs()
+    per = sub.groupby("origin").agg(err=("abs_err", "sum"), y=("y_true", "sum"))
+    e, y = per["err"].values, per["y"].values
+    idx = np.random.default_rng(seed).integers(0, len(e), size=(n_boot, len(e)))
+    boot = e[idx].sum(axis=1) / y[idx].sum(axis=1)
+    return float(e.sum() / y.sum()), float(np.quantile(boot, 0.025)), float(np.quantile(boot, 0.975))

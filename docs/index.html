@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYC Ridership Forecasting</title>
+<meta name="description" content="Two-week-ahead forecasts of daily NYC transit ridership with honest rolling backtests, calibrated intervals, MLflow tracking and a drift monitor, retrained weekly.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="top"><div class="wrap">
+  <a class="brand" href="index.html">NYC ridership forecasting</a>
+  <a href="#forecast">Forecast</a><a href="#results">Results</a><a href="#monitor">Drift monitor</a><a href="#pipeline">Pipeline</a><a href="https://github.com/kuanyishen/nyc-ridership-forecasting">GitHub</a>
+</div></nav>
+<main class="wrap">
+<header class="hero">
+  <div class="eyebrow">Time series · MLOps · public MTA data</div>
+  <h1>Can we forecast NYC ridership two weeks out, and know when to stop trusting the forecast?</h1>
+  <p class="lead">A production-style pipeline on the MTA's daily ridership data: five series (subway, bus, LIRR, Metro-North, bridge and tunnel traffic), six models from a naive baseline to Prophet and XGBoost, a rolling backtest that never peeks at the future, prediction intervals checked for coverage, MLflow tracking, and a drift monitor. It retrains every week on GitHub Actions.</p>
+  <div class="row"><a class="btn" href="#forecast">See the live forecast</a><a class="btn ghost" href="https://github.com/kuanyishen/nyc-ridership-forecasting">View code</a></div>
+</header>
+
+<div class="kpis">
+  <div class="kpi"><b>4.3%</b><span>average 14-day-ahead error (WAPE) of the best model, the Prophet + XGBoost ensemble</span></div>
+  <div class="kpi"><b>40% lower</b><span>error than "same weekday last week" (7.1%); better on every series, significantly</span></div>
+  <div class="kpi"><b>84%</b><span>of actual days land inside the 80% interval (the intervals use only past errors)</span></div>
+  <div class="kpi"><b>&ge; 20%</b><span>level shifts the drift monitor catches within about a week; shifts under ~5% it mostly misses</span></div>
+</div>
+
+<div class="callout"><p><b>TL;DR.</b> Ridership has strong weekly and holiday structure, so the bar is "beat last week's value", not "beat a naive guess" (plain naive is 23% off). XGBoost and Prophet clear that bar on all five series, and averaging them is the most accurate overall (4.3% vs 7.1%), though the ensemble's edge over XGBoost alone is within noise on every series. XGBoost beats Prophet significantly on subway and bus. Holidays and weekends are hardest (8.1% and 5.9% error vs 3.3% on weekdays). The drift monitor is reliable for big shifts and honest about being blind to small ones: congestion pricing moved bridge-and-tunnel traffic by only about 1.8 points, below what it can detect.</p></div>
+
+<h2 id="data">The data</h2>
+<p>MTA Daily Ridership and Traffic (2020-03-01 to 2026-11-05, from <a href="https://catalog.data.gov/dataset/mta-daily-ridership-and-traffic-beginning-2020">data.ny.gov</a>): one row per day and mode. Practical issues I handled rather than assumed away: counts arrive as text with thousands separators; the newest days are missing for some modes while the MTA catches up (publication lag), so each series is cut at its last published day; the Staten Island Railway has gaps in 2020-21; and the 2020 collapse and recovery is a different regime from today. I model five modes with complete histories, and I start training in 2021-06 (see the ablation below).</p>
+
+<h2 id="forecast">The forecast: next 14 days</h2>
+<figure><img src="assets/fig_forecast.png" alt="14-day forecasts for five series"><figcaption>Ensemble forecast with an 80% interval, made from data through 2026-11-05. This figure and table are regenerated every week.</figcaption></figure>
+<h3>Subway, day by day</h3>
+<div class="tablewrap"><table><thead><tr><th>Date</th><th>Forecast</th><th>80% interval</th></tr></thead><tbody><tr><td>2026-11-04</td><td>4.62 M</td><td>4.31 - 4.90 M</td></tr><tr><td>2026-11-05</td><td>4.74 M</td><td>4.42 - 5.03 M</td></tr><tr><td>2026-11-06</td><td>4.44 M</td><td>4.14 - 4.71 M</td></tr><tr><td>2026-11-07</td><td>3.24 M</td><td>3.03 - 3.44 M</td></tr><tr><td>2026-11-08</td><td>2.57 M</td><td>2.40 - 2.72 M</td></tr><tr><td>2026-11-09</td><td>4.13 M</td><td>3.85 - 4.38 M</td></tr><tr><td>2026-11-10</td><td>4.55 M</td><td>4.25 - 4.83 M</td></tr><tr><td>2026-11-11</td><td>4.15 M</td><td>3.83 - 4.45 M</td></tr><tr><td>2026-11-12</td><td>4.60 M</td><td>4.25 - 4.93 M</td></tr><tr><td>2026-11-13</td><td>4.32 M</td><td>3.99 - 4.63 M</td></tr><tr><td>2026-11-14</td><td>3.12 M</td><td>2.88 - 3.35 M</td></tr><tr><td>2026-11-15</td><td>2.48 M</td><td>2.28 - 2.65 M</td></tr><tr><td>2026-11-16</td><td>4.10 M</td><td>3.78 - 4.39 M</td></tr><tr><td>2026-11-17</td><td>4.53 M</td><td>4.18 - 4.85 M</td></tr></tbody></table></div>
+<p class="sub">Day-of-week and holidays drive the pattern (for example the weekend dips). The forecast starts at each series' last published day, so subway and bus forecasts begin a day or two before the others.</p>
+
+<h2 id="method">How the models were built and tested</h2>
+<div class="tablewrap"><table><thead><tr><th>Model</th><th>What it does</th></tr></thead><tbody><tr><td>Naive</td><td>Repeats the last value. Ignores the weekly cycle, so it is a floor.</td></tr><tr><td>Seasonal naive</td><td>Same weekday last week (or the most recent same weekday for horizons beyond 7 days). The real benchmark.</td></tr><tr><td>Median of 4 weeks</td><td>Median of the last four same weekdays; robust to one odd week.</td></tr><tr><td>Prophet</td><td>Trend + weekly and yearly seasonality + New York holidays.</td></tr><tr><td>XGBoost (direct multi-horizon)</td><td>One model for all 14 horizons. Predicts log(actual / base), where base is the median of the last four same weekdays, from lags, recent level and trend, and calendar features of the target day. Features use only information available at the forecast origin (a unit test corrupts all later data and checks nothing changes).</td></tr><tr><td>Ensemble</td><td>Average of Prophet and XGBoost.</td></tr></tbody></table></div>
+<ul class="tight">
+<li><b>Rolling-origin backtest:</b> 48 forecast origins from 2023-01-01 to 2026-09-25, spaced 29 days apart so every weekday is an origin (my first version used 28-day spacing, which made every origin a Sunday and confounded forecast horizon with day of week; I caught it because error did not rise with horizon, then fixed and re-ran). At each origin every model is refit on the past only and scored on the next 14 days.</li>
+<li><b>Metric:</b> WAPE = total absolute error divided by total actual ridership (it is not thrown off by small days like MAPE).</li>
+<li><b>Uncertainty:</b> the 14 forecasts from one origin share the same shocks, so confidence intervals resample <em>whole origins</em>, never single days.</li>
+<li><b>Prediction intervals:</b> for each model and horizon band, the relative errors of <em>earlier</em> origins give the interval around a new forecast, and coverage is then measured on later origins.</li>
+</ul>
+
+<h2 id="results">Results</h2>
+<figure><img src="assets/fig_wape.png" alt="WAPE by series and model"><figcaption>14-day-ahead WAPE with 95% confidence intervals over forecast origins (log scale).</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th>Series</th><th>Naive</th><th>Seasonal naive</th><th>Median of last 4 same weekdays</th><th>Prophet</th><th>XGBoost</th><th>Ensemble</th></tr></thead><tbody><tr><td>Subway</td><td>25.0% <span class='sub'>(22.6%-27.4%)</span></td><td>7.4% <span class='sub'>(6.1%-8.8%)</span></td><td>7.0% <span class='sub'>(5.9%-8.4%)</span></td><td>5.1% <span class='sub'>(4.2%-6.1%)</span></td><td>4.4% <span class='sub'>(3.8%-5.0%)</span></td><td><b>4.3%</b> <span class='sub'>(3.6%-5.0%)</span></td></tr><tr><td>Bus</td><td>26.4% <span class='sub'>(23.6%-29.3%)</span></td><td>8.5% <span class='sub'>(7.1%-10.1%)</span></td><td>7.4% <span class='sub'>(6.3%-8.8%)</span></td><td>6.4% <span class='sub'>(5.5%-7.5%)</span></td><td><b>5.1%</b> <span class='sub'>(4.4%-5.9%)</span></td><td>5.2% <span class='sub'>(4.4%-6.2%)</span></td></tr><tr><td>Long Island Rail Road</td><td>29.8% <span class='sub'>(26.7%-33.1%)</span></td><td>7.6% <span class='sub'>(6.5%-8.9%)</span></td><td>7.1% <span class='sub'>(6.0%-8.2%)</span></td><td>5.6% <span class='sub'>(4.6%-6.7%)</span></td><td>5.0% <span class='sub'>(4.4%-5.7%)</span></td><td><b>4.8%</b> <span class='sub'>(4.1%-5.6%)</span></td></tr><tr><td>Metro-North</td><td>30.3% <span class='sub'>(27.3%-33.2%)</span></td><td>8.1% <span class='sub'>(6.8%-9.6%)</span></td><td>7.3% <span class='sub'>(6.2%-8.5%)</span></td><td>5.8% <span class='sub'>(4.8%-7.0%)</span></td><td>5.2% <span class='sub'>(4.5%-6.0%)</span></td><td><b>5.0%</b> <span class='sub'>(4.2%-5.9%)</span></td></tr><tr><td>Bridges & tunnels (vehicles)</td><td>5.7% <span class='sub'>(4.9%-6.7%)</span></td><td>4.1% <span class='sub'>(3.6%-4.7%)</span></td><td>3.7% <span class='sub'>(3.3%-4.3%)</span></td><td>3.1% <span class='sub'>(2.7%-3.7%)</span></td><td>2.9% <span class='sub'>(2.5%-3.3%)</span></td><td><b>2.7%</b> <span class='sub'>(2.4%-3.2%)</span></td></tr><tr><td><i>All series pooled</i></td><td>22.5%</td><td>7.1%</td><td>6.6%</td><td>5.1%</td><td>4.3%</td><td>4.3%</td></tr></tbody></table></div>
+<p>Pooled over all series: ensemble 4.3%, XGBoost 4.3%, Prophet 5.1%, median of 4 weeks 6.6%, seasonal naive 7.1%, naive 22.5%. Paired differences, with confidence intervals over origins (negative = the first model is better):</p>
+<div class="tablewrap"><table><thead><tr><th>Series</th><th>Ensemble vs seasonal naive</th><th>XGBoost vs Prophet</th><th>Ensemble vs XGBoost</th></tr></thead><tbody><tr><td>Subway</td><td>-3.12 pp [-4.28, -2.03], p = 0.000</td><td>-0.68 pp [-1.39, -0.10], p = 0.022</td><td>-0.13 pp [-0.44, +0.22], p = 0.445</td></tr><tr><td>Bus</td><td>-3.24 pp [-4.52, -2.07], p = 0.000</td><td>-1.32 pp [-1.99, -0.71], p = 0.000</td><td>+0.13 pp [-0.18, +0.48], p = 0.437</td></tr><tr><td>Long Island Rail Road</td><td>-2.77 pp [-3.95, -1.76], p = 0.000</td><td>-0.58 pp [-1.46, +0.15], p = 0.140</td><td>-0.19 pp [-0.57, +0.25], p = 0.358</td></tr><tr><td>Metro-North</td><td>-3.10 pp [-4.35, -1.98], p = 0.000</td><td>-0.56 pp [-1.46, +0.18], p = 0.161</td><td>-0.21 pp [-0.59, +0.24], p = 0.318</td></tr><tr><td>Bridges & tunnels (vehicles)</td><td>-1.38 pp [-1.90, -0.87], p = 0.000</td><td>-0.28 pp [-0.65, +0.05], p = 0.102</td><td>-0.13 pp [-0.31, +0.07], p = 0.191</td></tr></tbody></table></div>
+<ul class="tight">
+<li><b>Every model class beats the benchmark</b> on every series; the ensemble's gain over seasonal naive is 3.2-1.4 percentage points and significant everywhere.</li>
+<li><b>XGBoost vs Prophet:</b> XGBoost is better on every series, but the gap is only statistically clear for subway and bus.</li>
+<li><b>Ensemble vs XGBoost:</b> the difference is within noise on all five series. I would ship the ensemble for robustness, not because it is proven better.</li>
+</ul>
+<figure><img src="assets/fig_breakdown.png" alt="Error by horizon and day type"><figcaption>Pooled WAPE by forecast horizon and by type of day (holiday period = a holiday and the days next to it).</figcaption></figure>
+<p>Holiday periods and weekends are where forecasts are weakest, which is also where staffing decisions are hardest. Models that know the calendar cut holiday-period error to about 8% (XGBoost) from 18% for seasonal naive. One caution: Prophet is worse than seasonal naive on weekends (7.5% vs 6.6%), so its gains come from weekdays and holidays. Error is also nearly flat from 1 to 14 days ahead (4.5% to 4.2% for the ensemble), which says the signal is mostly the weekly and calendar pattern rather than short-term momentum.</p>
+<h3>Are the intervals honest?</h3>
+<figure><img src="assets/fig_coverage.png" alt="Interval coverage by model" style="max-width:640px"><figcaption>An 80% interval should contain 80% of actuals.</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th>Model</th><th>Coverage of the 80% interval</th><th>Typical interval width (relative to the forecast)</th></tr></thead><tbody><tr><td>Naive (last value)</td><td>79.6%</td><td>114.2%</td></tr><tr><td>Seasonal naive (same weekday last week)</td><td>78.0%</td><td>21.0%</td></tr><tr><td>Median of last 4 same weekdays</td><td>77.0%</td><td>18.6%</td></tr><tr><td>Prophet</td><td>84.0%</td><td>20.5%</td></tr><tr><td>XGBoost</td><td>83.8%</td><td>17.1%</td></tr><tr><td>Ensemble (Prophet + XGBoost)</td><td>83.9%</td><td>17.2%</td></tr></tbody></table></div>
+<p>The model intervals are slightly conservative (about 84% vs the 80% target); the baselines' intervals are narrower but come with much larger point errors.</p>
+
+
+<h2 id="monitor">Drift monitor: knowing when the forecast stops being trustworthy</h2>
+<p>Two checks run every week:</p>
+<ol class="tight">
+<li><b>Level-shift detector.</b> Each day's "surprise" is log(actual / median of the last four same weekdays), minus the same quantity one and two years earlier so recurring calendar transitions (December holidays, summer) cancel. A two-sided CUSUM on that, scaled by its own recent spread, alarms when ridership drifts away from its pattern. Thresholds were tuned on 2023-01-01 to 2024-06-30 and evaluated on history from 2024-07-01 onward.</li>
+<li><b>Forecast quality.</b> The live forecasts are scored against actuals as they arrive and compared with the error distribution the backtest saw. Status now: no live forecasts have matured yet. (It starts producing a score after the first forecasts mature, about two weeks.)</li>
+</ol>
+<figure><img src="assets/fig_drift.png" alt="Detection power and alarm timeline"><figcaption>Left: how often a level shift injected into real history is detected within four weeks. Right: alarms on out-of-sample history.</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th>Series</th><th>Alarm threshold (CUSUM h)</th><th>False alarms per year (out of sample)</th><th>Detects a 20% drop</th><th>Detects a 10% drop</th><th>Detects a 5% drop</th></tr></thead><tbody><tr><td>Subway</td><td>24.5</td><td>0.9</td><td>100% (median 7 days)</td><td>42% (median 14 days)</td><td>8% (median 16 days)</td></tr><tr><td>Bus</td><td>16.0</td><td>3.0</td><td>96% (median 7 days)</td><td>25% (median 12 days)</td><td>25% (median 18 days)</td></tr><tr><td>Long Island Rail Road</td><td>19.5</td><td>3.0</td><td>100% (median 6 days)</td><td>62% (median 13 days)</td><td>17% (median 18 days)</td></tr><tr><td>Metro-North</td><td>23.5</td><td>1.7</td><td>100% (median 8 days)</td><td>42% (median 15 days)</td><td>8% (median 13 days)</td></tr><tr><td>Bridges & tunnels</td><td>24.5</td><td>0.9</td><td>100% (median 5 days)</td><td>88% (median 11 days)</td><td>17% (median 17 days)</td></tr></tbody></table></div>
+<ul class="tight">
+<li><b>Measured, not assumed:</b> detection power comes from injecting known shifts into the real series at 24 start dates; false-alarm rates come from history the thresholds never saw.</li>
+<li><b>It reliably catches big shifts</b> (about 20% within a week) and often 10% ones, but mostly misses 5%. It is a smoke alarm, not a microscope.</li>
+<li><b>Alarms cluster on the same days across series</b> (late January and late February 2026 in particular), which points to region-wide disruptions rather than random noise; I did not match them to weather or news.</li>
+<li><b>A real test, honestly reported:</b> congestion pricing started 2025-01-05. Year-over-year, bridge-and-tunnel traffic changed from +0.9% in the eight weeks before to -0.9% in the eight weeks after, a 1.8-point move, far below the monitor's sensitivity, so it (correctly, by design) did not alarm.</li>
+</ul>
+
+<h2 id="pipeline">The production pipeline</h2>
+<ul class="tight">
+<li><b>Weekly run on GitHub Actions</b> (<code>.github/workflows/weekly.yml</code>): pull the latest published days from the data.ny.gov API, refit every model on all data, write the next 14 days with intervals, score earlier forecasts against actuals, run the drift monitor, log to MLflow, rebuild this page.</li>
+<li><b>MLflow tracking:</b> 35 runs logged (one per series and model for the backtest, one per live forecast) with parameters, metrics, data end date and git commit. The run table is exported to <code>docs/assets/mlflow_runs.json</code>.</li>
+<li><b>Failure handling:</b> if the API is unreachable the run keeps the existing data and says so; every forecast file is kept in <code>forecasts/</code>, so the live track record builds up automatically.</li>
+<li><b>Tests:</b> 24 tests, including no-leakage, interval no-peeking, origin spacing and drift-detector calibration.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul class="tight">
+<li>Systemwide daily totals only: no weather, events, service changes or fares as predictors, and no station-level detail.</li>
+<li>The 14-day horizon and weekly retraining are my choices; shorter-horizon or intraday forecasting would need different data.</li>
+<li>Most backtest origins fall after the pandemic recovery, so a new regime shock would test the models differently than 48 calm-ish origins do.</li>
+<li>Intervals assume future errors resemble past errors; they widen only through the retraining cycle.</li>
+</ul>
+
+<h2>Reproduce</h2>
+<pre><code>pip install -e ".[dev]"
+python -m ridership.run backtest    # ~4 min: 5 series x 6 models x 48 origins
+python -m ridership.run forecast
+python -m ridership.run monitor
+python -m ridership.run track
+python analysis/build_report.py
+pytest</code></pre>
+<footer>Built by Sky Shen · <a href="https://github.com/kuanyishen/nyc-ridership-forecasting">source and data</a></footer>
+</main>
+</body>
+</html>

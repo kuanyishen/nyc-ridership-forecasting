@@ -36,15 +36,25 @@ def log_runs(table: pd.DataFrame, params: dict, *, kind: str, data_end: str, tra
     return len(table)
 
 
+def merge_run_tables(old: list[dict], new: list[dict]) -> list[dict]:
+    """Union of two run lists keyed by run_id (new wins), newest first. Lets a CI job with a fresh MLflow database keep history."""
+    by_id = {r["run_id"]: r for r in old}
+    by_id.update({r["run_id"]: r for r in new})
+    return sorted(by_id.values(), key=lambda r: str(r.get("start_time", "")), reverse=True)
+
+
 def export_runs(tracking_uri: str, out: Path) -> int:
-    """Dump the run table (params, metrics, tags) as JSON for the dashboard."""
+    """Dump the run table (params, metrics, tags) as JSON for the dashboard, merged with what is already in ``out``."""
     import mlflow
 
     mlflow.set_tracking_uri(tracking_uri)
     exp = mlflow.get_experiment_by_name(EXPERIMENT)
-    if exp is None:
-        return 0
-    runs = mlflow.search_runs([exp.experiment_id], order_by=["start_time DESC"])
-    keep = [c for c in runs.columns if c.startswith(("params.", "metrics.", "tags.kind", "tags.data_end", "tags.git_sha")) or c in ("run_id", "start_time", "tags.mlflow.runName")]
-    out.write_text(json.dumps(json.loads(runs[keep].to_json(orient="records", date_format="iso")), indent=1))
-    return len(runs)
+    new: list[dict] = []
+    if exp is not None:
+        runs = mlflow.search_runs([exp.experiment_id], order_by=["start_time DESC"])
+        keep = [c for c in runs.columns if c.startswith(("params.", "metrics.", "tags.kind", "tags.data_end", "tags.git_sha")) or c in ("run_id", "start_time", "tags.mlflow.runName")]
+        new = json.loads(runs[keep].to_json(orient="records", date_format="iso"))
+    old = json.loads(out.read_text()) if out.exists() else []
+    merged = merge_run_tables(old, new)
+    out.write_text(json.dumps(merged, indent=1))
+    return len(merged)

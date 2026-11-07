@@ -42,3 +42,14 @@ def test_performance_status_flags_only_unusual_error():
     ref = pd.Series(np.linspace(0.02, 0.06, 50))
     assert drift.performance_status(0.04, ref)["alert"] is False
     assert drift.performance_status(0.12, ref)["alert"] is True
+
+
+def test_year_over_year_adjustment_cancels_recurring_calendar_effects():
+    rng = np.random.default_rng(1)
+    idx = pd.date_range("2021-01-04", periods=1400, freq="D")
+    pattern = np.array([1.0, 1.05, 1.05, 1.05, 1.0, 0.65, 0.5])
+    xmas = ((idx.month == 12) & (idx.day >= 20)) | ((idx.month == 1) & (idx.day <= 8))          # a recurring 20-day dip
+    y = pd.Series(1e6 * pattern[idx.day_of_week] * np.where(xmas, 0.6, 1.0) * np.exp(rng.normal(0, 0.02, len(idx))), index=idx)
+    raw, adj = drift.surprise(y).loc["2023-01-15":], drift.adjusted_surprise(y).loc["2023-01-15":]
+    window = lambda s: s[(s.index.month == 1) & (s.index.day >= 9) & (s.index.day <= 31)].abs().mean()   # the weeks AFTER the dip
+    assert window(adj) < 0.6 * window(raw)

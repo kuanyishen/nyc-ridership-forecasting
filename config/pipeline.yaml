@@ -4,7 +4,8 @@ horizon: 14                             # days ahead
 train_start: "2021-06-01"               # skip the 2020-21 collapse: weekly patterns are unstable there
 backtest:
   first_origin: "2023-01-01"
-  step_days: 28                         # a new forecast origin every 28 days
+  step_days: 29                         # coprime with 7, so origins cycle through every weekday (a multiple of 7 would test
+                                        # only one weekday and confound forecast horizon with day of week)
 interval_level: 0.8                     # nominal coverage of prediction intervals
 models: [naive, seasonal_naive, seasonal_median4, prophet, xgboost, ensemble]
 reference_model: seasonal_naive         # skill is measured relative to this

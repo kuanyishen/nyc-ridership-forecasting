@@ -1,0 +1,47 @@
+name: weekly
+# Pull the newest published days, refit, forecast the next 14 days, score earlier forecasts, run the drift monitor,
+# log to MLflow and rebuild the dashboard. Manual runs are always available; the schedule is Mondays.
+on:
+  workflow_dispatch:
+    inputs:
+      full_backtest:
+        description: "Also re-run the full rolling backtest first (about 5 minutes)"
+        type: boolean
+        required: false
+        default: false
+  schedule:
+    - cron: "23 10 * * 1"      # Mondays 10:23 UTC
+permissions:
+  contents: write
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    env:
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+      IN_FULL: ${{ inputs.full_backtest }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+      - name: Fetch latest data
+        run: python -m ridership.run fetch
+      - name: Backtest (only when requested)
+        if: ${{ inputs.full_backtest }}
+        run: |
+          python -m ridership.run backtest
+          python -m ridership.run track
+      - name: Forecast, monitor, track
+        run: python -m ridership.run weekly
+      - name: Rebuild the dashboard
+        run: python analysis/build_report.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data forecasts docs
+          git commit -m "Weekly run $(date -u +%F)" || echo "nothing to commit"
+          git pull --rebase -q || true
+          git push || echo "push failed"

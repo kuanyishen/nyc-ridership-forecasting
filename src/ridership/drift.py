@@ -1,7 +1,9 @@
 """Drift monitoring.
 
 1. SERIES SHIFT (level change): each day's "surprise" is log(actual / median of the last four same weekdays), with days
-   around holidays masked. A two-sided CUSUM on the surprise, scaled by its own recent robust spread, raises an alarm
+   around holidays masked, MINUS the same quantity one and two years earlier (so recurring calendar transitions such as
+   the December holidays or summer cancel out). A two-sided CUSUM on that adjusted surprise, scaled by its own recent
+   robust spread, raises an alarm
    when ridership drifts away from its weekly pattern. Detection delay and false-alarm rate are measured by injecting
    known level shifts into real history, not assumed.
 2. FORECAST QUALITY: the recent WAPE of live forecasts is compared with the distribution of WAPEs the backtest saw.
@@ -23,6 +25,16 @@ def surprise(y: pd.Series) -> pd.Series:
     masked = ((f["to_next_hol"] <= 1) | (f["since_prev_hol"] <= 1)).values
     s[masked] = np.nan
     return s
+
+
+def adjusted_surprise(y: pd.Series, lags: tuple[int, ...] = (364, 728)) -> pd.Series:
+    """Surprise minus its own value 52 and 104 weeks earlier (same weekday), removing recurring calendar effects.
+
+    Where no earlier year exists the plain surprise is returned, so the first year of history is unadjusted.
+    """
+    s = surprise(y)
+    prior = pd.concat([s.shift(l) for l in lags], axis=1).mean(axis=1)
+    return s - prior.fillna(0.0)
 
 
 def robust_scale(s: pd.Series, window: int = 365, min_periods: int = 90) -> pd.Series:
@@ -52,15 +64,15 @@ def cusum(z: pd.Series, k: float = 0.5, h: float = 5.0) -> pd.DataFrame:
 
 def detect(y: pd.Series, k: float = 0.5, h: float = 5.0, scale: pd.Series | None = None) -> pd.DataFrame:
     """Alarms for a series; ``scale`` may be supplied (e.g. from clean history) instead of being recomputed."""
-    s = surprise(y)
+    s = adjusted_surprise(y)
     sc = robust_scale(s) if scale is None else scale
     out = cusum(s / sc, k, h)
     return out[out["alarm"] != ""]
 
 
-def tune_h(y: pd.Series, k: float, tune_start: str, tune_end: str, target_per_year: float, grid=np.arange(3.0, 15.1, 0.5)) -> float:
-    """Smallest threshold whose false-alarm rate on a CLEAN tuning window is at most ``target_per_year``."""
-    s = surprise(y)
+def tune_h(y: pd.Series, k: float, tune_start: str, tune_end: str, target_per_year: float, grid=np.arange(3.0, 30.1, 0.5)) -> float:
+    """Smallest threshold whose false-alarm rate on a tuning window is at most ``target_per_year`` (largest grid value if none is)."""
+    s = adjusted_surprise(y)
     z = (s / robust_scale(s)).loc[tune_start:tune_end]
     years = (pd.Timestamp(tune_end) - pd.Timestamp(tune_start)).days / 365.25
     for h in grid:
@@ -71,13 +83,12 @@ def tune_h(y: pd.Series, k: float, tune_start: str, tune_end: str, target_per_ye
 
 def injection_test(y: pd.Series, delta: float, starts: list[pd.Timestamp], k: float, h: float, max_delay: int = 28) -> dict:
     """Multiply the series by (1+delta) from each start date onward and measure whether/when the detector fires."""
-    s_clean = surprise(y)
-    scale = robust_scale(s_clean)               # yardstick from history the shift has not touched
+    scale = robust_scale(adjusted_surprise(y))  # yardstick from history the shift has not touched
     delays = []
     for d in starts:
         y_mod = y.copy()
         y_mod.loc[d:] *= 1 + delta
-        z = (surprise(y_mod) / scale).loc[d - pd.Timedelta(days=0): d + pd.Timedelta(days=max_delay)]
+        z = (adjusted_surprise(y_mod) / scale).loc[d: d + pd.Timedelta(days=max_delay)]
         al = cusum(z, k, h).query("alarm != ''")
         delays.append((al.index[0] - d).days if len(al) else np.nan)
     arr = np.array(delays, dtype=float)

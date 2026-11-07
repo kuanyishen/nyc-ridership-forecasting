@@ -56,3 +56,12 @@ def test_final_quantiles_and_apply():
     fc = pd.DataFrame({"series": ["S"] * 2, "model": ["good"] * 2, "h": [1, 10], "forecast": [1_000_000.0, 1_000_000.0]})
     out = intervals.apply_final(fc, q)
     assert (out["lo"] < out["forecast"]).all() and (out["hi"] > out["forecast"]).all()
+
+
+def test_backtest_origins_cover_every_weekday(weekly_series):
+    from ridership.backtest import make_origins
+
+    origins = make_origins(weekly_series, "2023-01-01", 29, 14)
+    assert len({o.day_of_week for o in origins}) == 7
+    assert origins[-1] + pd.Timedelta(days=14) <= weekly_series.index[-1]
+    assert len({o.day_of_week for o in make_origins(weekly_series, "2023-01-01", 28, 14)}) == 1    # the flaw this guards against

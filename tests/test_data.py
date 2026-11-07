@@ -41,3 +41,12 @@ def test_save_and_reload_roundtrip(tmp_path):
     data.save_raw(d, tmp_path / "r.csv")
     back = data.load_raw(tmp_path / "r.csv")
     assert back["count"].iloc[0] == 1234567 and back["count"].isna().iloc[1]
+
+
+def test_run_table_merge_keeps_history_and_prefers_new():
+    from ridership.tracking import merge_run_tables
+
+    old = [{"run_id": "a", "start_time": "2026-01-01", "metrics.wape": 0.1}, {"run_id": "b", "start_time": "2026-01-02", "metrics.wape": 0.2}]
+    new = [{"run_id": "b", "start_time": "2026-01-02", "metrics.wape": 0.25}, {"run_id": "c", "start_time": "2026-02-01", "metrics.wape": 0.3}]
+    m = merge_run_tables(old, new)
+    assert [r["run_id"] for r in m] == ["c", "b", "a"] and m[1]["metrics.wape"] == 0.25

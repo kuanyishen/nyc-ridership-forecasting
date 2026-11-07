@@ -1,0 +1,86 @@
+[
+ {
+  "series": "Subway",
+  "model": "prophet",
+  "train_start": "all history (2020-03)",
+  "wape": 0.054205468282007695,
+  "n": 672
+ },
+ {
+  "series": "Subway",
+  "model": "xgboost",
+  "train_start": "all history (2020-03)",
+  "wape": 0.04238595203466516,
+  "n": 672
+ },
+ {
+  "series": "Subway",
+  "model": "prophet",
+  "train_start": "2021-06-01",
+  "wape": 0.050646678425296035,
+  "n": 672
+ },
+ {
+  "series": "Subway",
+  "model": "xgboost",
+  "train_start": "2021-06-01",
+  "wape": 0.04382220240219934,
+  "n": 672
+ },
+ {
+  "series": "Subway",
+  "model": "prophet",
+  "train_start": "2022-06-01",
+  "wape": 0.09683895309303774,
+  "n": 672
+ },
+ {
+  "series": "Subway",
+  "model": "xgboost",
+  "train_start": "2022-06-01",
+  "wape": 0.04323610475836428,
+  "n": 672
+ },
+ {
+  "series": "Bus",
+  "model": "prophet",
+  "train_start": "all history (2020-03)",
+  "wape": 0.07328123688763295,
+  "n": 672
+ },
+ {
+  "series": "Bus",
+  "model": "xgboost",
+  "train_start": "all history (2020-03)",
+  "wape": 0.052967435761476916,
+  "n": 672
+ },
+ {
+  "series": "Bus",
+  "model": "prophet",
+  "train_start": "2021-06-01",
+  "wape": 0.06424145687972364,
+  "n": 672
+ },
+ {
+  "series": "Bus",
+  "model": "xgboost",
+  "train_start": "2021-06-01",
+  "wape": 0.051029460171417816,
+  "n": 672
+ },
+ {
+  "series": "Bus",
+  "model": "prophet",
+  "train_start": "2022-06-01",
+  "wape": 0.08440015683791642,
+  "n": 672
+ },
+ {
+  "series": "Bus",
+  "model": "xgboost",
+  "train_start": "2022-06-01",
+  "wape": 0.052528004033295876,
+  "n": 672
+ }
+]

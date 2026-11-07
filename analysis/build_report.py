@@ -186,7 +186,7 @@ def main() -> None:
                    [[SERIES_LABEL[s], *[(f"<b>{pc(tbl[(s, m)][0])}</b>" if m == min(models_all, key=lambda mm: tbl[(s, mm)][0]) else pc(tbl[(s, m)][0])) + f" <span class='sub'>({pc(tbl[(s, m)][1])}-{pc(tbl[(s, m)][2])})</span>" for m in models_all]] for s in cfg["series"]]
                    + [["<i>All series pooled</i>", *[pc(pooled[m]) for m in models_all]]])
     t_pair = table(["Series", "Ensemble vs seasonal naive", "XGBoost vs Prophet", "Ensemble vs XGBoost"],
-                   [[SERIES_LABEL[s], *[f"{paired[(s, a, b)]['wape_diff'] * 100:+.2f} pp [{paired[(s, a, b)]['lo'] * 100:+.2f}, {paired[(s, a, b)]['hi'] * 100:+.2f}], p = {paired[(s, a, b)]['p_value']:.3f}"
+                   [[SERIES_LABEL[s], *[f"{paired[(s, a, b)]['wape_diff'] * 100:+.2f} pp [{paired[(s, a, b)]['lo'] * 100:+.2f}, {paired[(s, a, b)]['hi'] * 100:+.2f}], p {('< 0.001' if paired[(s, a, b)]['p_value'] < 0.001 else '= ' + format(paired[(s, a, b)]['p_value'], '.3f'))}"
                                          for a, b in (("ensemble", ref), ("xgboost", "prophet"), ("ensemble", "xgboost"))]] for s in cfg["series"]])
     t_cov = table(["Model", "Coverage of the 80% interval", "Typical interval width (relative to the forecast)"],
                   [[MODEL_LABEL[m], pc(cov.loc[m, "coverage"]), pc(cov.loc[m, "rel_width"])] for m in models_all])
@@ -196,8 +196,13 @@ def main() -> None:
                   [[SERIES_LABEL[s].split(" (")[0], f"{M['series'][s]['h']:.1f}", f"{M['series'][s]['false_alarm_rate_per_year']:.1f}",
                     *[(lambda i: f"{i['detected_share'] * 100:.0f}% (median {i['median_delay_days']:.0f} days)" if i["median_delay_days"] is not None else f"{i['detected_share'] * 100:.0f}%")(next(x for x in M['series'][s]['injection'] if abs(x['delta'] - d) < 1e-9)) for d in (-0.2, -0.1, -0.05)]]
                    for s in cfg["series"]])
-    t_abl = ""
+    t_abl, abl_text = "", ""
     if abl:
+        A = pd.DataFrame(abl).pivot_table(index=["series", "model"], columns="train_start", values="wape")
+        allh, mid, late = "all history (2020-03)", "2021-06-01", "2022-06-01"
+        abl_text = (f"Starting in 2021-06 helps Prophet (error {pc(A.loc[('Bus', 'prophet'), mid])} vs {pc(A.loc[('Bus', 'prophet'), allh])} on bus, {pc(A.loc[('Subway', 'prophet'), mid])} vs {pc(A.loc[('Subway', 'prophet'), allh])} on subway, with all history) "
+                    f"and is neutral for XGBoost (within {max(abs(A.loc[(sr, 'xgboost'), mid] - A.loc[(sr, 'xgboost'), allh]) for sr in ('Bus', 'Subway')) * 100:.1f} points either way, no consistent winner). "
+                    f"Starting later hurts Prophet badly ({pc(A.loc[('Subway', 'prophet'), late])} on subway) because it loses the year-over-year seasonality it needs.")
         df = pd.DataFrame(abl).pivot_table(index=["series", "model"], columns="train_start", values="wape").reset_index()
         cols = [c for c in df.columns if c not in ("series", "model")]
         t_abl = table(["Series", "Model", *cols], [[r["series"], r["model"], *[pc(r[c]) for c in cols]] for _, r in df.iterrows()])
@@ -265,7 +270,7 @@ def main() -> None:
 <p>Pooled over all series: ensemble {pc(pooled['ensemble'])}, XGBoost {pc(pooled['xgboost'])}, Prophet {pc(pooled['prophet'])}, median of 4 weeks {pc(pooled['seasonal_median4'])}, seasonal naive {pc(pooled['seasonal_naive'])}, naive {pc(pooled['naive'])}. Paired differences, with confidence intervals over origins (negative = the first model is better):</p>
 {t_pair}
 <ul class="tight">
-<li><b>Every model class beats the benchmark</b> on every series; the ensemble's gain over seasonal naive is {abs(min(paired[(s, 'ensemble', ref)]['wape_diff'] for s in cfg['series'])) * 100:.1f}-{abs(max(paired[(s, 'ensemble', ref)]['wape_diff'] for s in cfg['series'])) * 100:.1f} percentage points and significant everywhere.</li>
+<li><b>Every model class beats the benchmark</b> on every series; the ensemble's gain over seasonal naive is {abs(max(paired[(s, 'ensemble', ref)]['wape_diff'] for s in cfg['series'])) * 100:.1f}-{abs(min(paired[(s, 'ensemble', ref)]['wape_diff'] for s in cfg['series'])) * 100:.1f} percentage points and significant everywhere.</li>
 <li><b>XGBoost vs Prophet:</b> XGBoost is better on every series, but the gap is only statistically clear for subway and bus.</li>
 <li><b>Ensemble vs XGBoost:</b> the difference is within noise on all five series. I would ship the ensemble for robustness, not because it is proven better.</li>
 </ul>
@@ -275,7 +280,7 @@ def main() -> None:
 <figure><img src="assets/fig_coverage.png" alt="Interval coverage by model" style="max-width:640px"><figcaption>An 80% interval should contain 80% of actuals.</figcaption></figure>
 {t_cov}
 <p>The model intervals are slightly conservative (about {pc(cov.loc['ensemble', 'coverage'], 0)} vs the 80% target); the baselines' intervals are narrower but come with much larger point errors.</p>
-{('<h3>Why train from 2021-06?</h3><p>Same backtest, three training start dates (WAPE):</p>' + t_abl + '<p class="sub">If the 2020-21 collapse were useful, using all history would win. See which column is lowest for each row.</p>') if t_abl else ''}
+{('<h3>Why train from 2021-06?</h3><p>Same backtest, three training start dates (WAPE), on the two series with the most data:</p>' + t_abl + f'<p>{abl_text}</p>') if t_abl else ''}
 
 <h2 id="monitor">Drift monitor: knowing when the forecast stops being trustworthy</h2>
 <p>Two checks run every week:</p>
@@ -299,6 +304,8 @@ def main() -> None:
 <li><b>Failure handling:</b> if the API is unreachable the run keeps the existing data and says so; every forecast file is kept in <code>forecasts/</code>, so the live track record builds up automatically.</li>
 <li><b>Tests:</b> 24 tests, including no-leakage, interval no-peeking, origin spacing and drift-detector calibration.</li>
 </ul>
+
+{('<figure><img src="assets/mlflow_ui.png" alt="MLflow runs table" style="max-width:760px"><figcaption>The MLflow UI for this project: one run per series and model, each with parameters, metrics, the data end date and the git commit.</figcaption></figure>') if (ASSETS / 'mlflow_ui.png').exists() else ''}
 
 <h2>Limitations</h2>
 <ul class="tight">

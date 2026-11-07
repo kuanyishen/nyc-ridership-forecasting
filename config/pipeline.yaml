@@ -1,7 +1,7 @@
 # What is forecast, how far ahead, and how it is evaluated.
 series: [Subway, Bus, LIRR, MNR, BT]    # MTA modes; BT = bridge and tunnel traffic
 horizon: 14                             # days ahead
-train_start: "2021-06-01"               # skip the 2020-21 collapse: weekly patterns are unstable there
+train_start: "2021-06-01"               # skip the 2020-21 collapse (ablation: helps Prophet, neutral for XGBoost)
 backtest:
   first_origin: "2023-01-01"
   step_days: 29                         # coprime with 7, so origins cycle through every weekday (a multiple of 7 would test

@@ -109,7 +109,7 @@
 <h2 id="pipeline">The production pipeline</h2>
 <ul class="tight">
 <li><b>Weekly run on GitHub Actions</b> (<code>.github/workflows/weekly.yml</code>): pull the latest published days from the data.ny.gov API, refit every model on all data, write the next 14 days with intervals, score earlier forecasts against actuals, run the drift monitor, log to MLflow, rebuild this page.</li>
-<li><b>MLflow tracking:</b> 40 runs logged (one per series and model for the backtest, one per live forecast) with parameters, metrics, data end date and git commit. The run table is exported to <code>docs/assets/mlflow_runs.json</code>.</li>
+<li><b>MLflow tracking:</b> 45 runs logged (one per series and model for the backtest, one per live forecast) with parameters, metrics, data end date and git commit. The run table is exported to <code>docs/assets/mlflow_runs.json</code>.</li>
 <li><b>Failure handling:</b> if the API is unreachable the run keeps the existing data and says so; every forecast file is kept in <code>forecasts/</code>, so the live track record builds up automatically.</li>
 <li><b>Weather:</b> the weekly run also refreshes NOAA weather and labels each alarm as a weather event or not.</li>
 <li><b>Tests:</b> 34 tests, including no-leakage, interval no-peeking, origin spacing, drift-detector calibration and a regression test that the production model never sees weather.</li>

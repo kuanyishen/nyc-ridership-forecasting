@@ -46,10 +46,18 @@ def seasonal_median4(history: pd.Series, horizon: int, **_) -> pd.Series:
 
 # ------------------------------------------------------------------------------------------------ XGBoost (direct)
 
-def _features_for(y: np.ndarray, dates: pd.DatetimeIndex, origins: np.ndarray, h: int) -> tuple[pd.DataFrame, np.ndarray]:
+WX_COLS = ["prcp", "snow", "snwd", "tmax", "tmin"]
+
+
+def _features_for(y: np.ndarray, dates: pd.DatetimeIndex, origins: np.ndarray, h: int, wx: pd.DataFrame | None = None,
+                  wx_max_h: int | None = None) -> tuple[pd.DataFrame, np.ndarray]:
     """Features for forecasting day origin+h from information available at ``origins`` (array of positions).
 
     Returns (features, base) where base is the seasonal level the model's log-ratio output is relative to.
+
+    ``wx`` (observed weather by date) adds the weather OF THE TARGET DAY. That is information a real forecast does not
+    have 14 days ahead, so it is only for oracle experiments: ``wx_max_h`` keeps it for horizons up to that many days
+    (mimicking a reliable short-range weather forecast) and sets it to NaN beyond.
     """
     k = -(-h // 7)
     n = len(y)
@@ -73,11 +81,17 @@ def _features_for(y: np.ndarray, dates: pd.DatetimeIndex, origins: np.ndarray, h
         **{f"lag{j + 1}_is_hol": np.array([d in hol for d in lag_dates[j]], dtype=int) for j in range(4)},
     })
     f = pd.concat([f, cal.reset_index(drop=True)], axis=1)
+    if wx is not None:
+        use = wx_max_h is None or h <= wx_max_h
+        vals = wx.reindex(target_dates)[WX_COLS].values if use else np.full((len(target_dates), len(WX_COLS)), np.nan)
+        for j, c in enumerate(WX_COLS):
+            f[f"wx_{c}"] = vals[:, j]
     f.index = origins
     return f.replace([np.inf, -np.inf], np.nan), base
 
 
-def xgboost_forecast(history: pd.Series, horizon: int, *, train_start: str | None = None, n_estimators: int = 300, seed: int = 0, **_) -> pd.Series:
+def xgboost_forecast(history: pd.Series, horizon: int, *, train_start: str | None = None, n_estimators: int = 300, seed: int = 0,
+                     weather: pd.DataFrame | None = None, weather_max_h: int | None = None, **_) -> pd.Series:
     """One model for all horizons: predict log(y_T / base) where base = median of the last four same-weekday values."""
     from xgboost import XGBRegressor
 
@@ -88,7 +102,7 @@ def xgboost_forecast(history: pd.Series, horizon: int, *, train_start: str | Non
         origins = np.arange(35, len(y) - h)
         if len(origins) == 0:
             continue
-        f, base = _features_for(y, dates, origins, h)
+        f, base = _features_for(y, dates, origins, h, weather, weather_max_h)
         tgt = np.log(y[origins + h] / base)
         keep = np.isfinite(tgt) & np.isfinite(base)
         X.append(f[keep]), Y.append(tgt[keep])
@@ -99,7 +113,7 @@ def xgboost_forecast(history: pd.Series, horizon: int, *, train_start: str | Non
     o = np.array([len(y) - 1])
     preds = []
     for h in range(1, horizon + 1):
-        f, base = _features_for(y, dates, o, h)
+        f, base = _features_for(y, dates, o, h, weather, weather_max_h)
         preds.append(float(base[0] * np.exp(model.predict(f)[0])))
     return pd.Series(preds, index=_future_index(history, horizon))
 
@@ -120,8 +134,26 @@ def prophet_forecast(history: pd.Series, horizon: int, *, train_start: str | Non
     return pd.Series(m.predict(fut)["yhat"].values, index=fut["ds"])
 
 
+def xgboost_plain(history: pd.Series, horizon: int, *, weather: pd.DataFrame | None = None, **kw) -> pd.Series:
+    """The production XGBoost: it must NEVER see weather, even when a backtest hands weather to every model."""
+    kw.pop("weather_max_h", None)
+    return xgboost_forecast(history, horizon, **kw)
+
+
+def xgboost_wx(history: pd.Series, horizon: int, *, weather: pd.DataFrame | None = None, **kw) -> pd.Series:
+    """ORACLE: XGBoost that is told the actual weather of every target day."""
+    kw.pop("weather_max_h", None)
+    return xgboost_forecast(history, horizon, weather=weather, **kw)
+
+
+def xgboost_wx3(history: pd.Series, horizon: int, *, weather: pd.DataFrame | None = None, **kw) -> pd.Series:
+    """ORACLE: told the actual weather only for the next 3 days (a perfect short-range forecast); blind beyond that."""
+    kw.pop("weather_max_h", None)
+    return xgboost_forecast(history, horizon, weather=weather, weather_max_h=3, **kw)
+
+
 BASE_MODELS = {"naive": naive, "seasonal_naive": seasonal_naive, "seasonal_median4": seasonal_median4,
-               "prophet": prophet_forecast, "xgboost": xgboost_forecast}
+               "prophet": prophet_forecast, "xgboost": xgboost_plain, "xgboost_wx": xgboost_wx, "xgboost_wx3": xgboost_wx3}
 
 
 def run_models(history: pd.Series, horizon: int, names: list[str], **kw) -> dict[str, pd.Series]:

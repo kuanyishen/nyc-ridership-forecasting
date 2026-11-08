@@ -14,9 +14,9 @@ def make_origins(y: pd.Series, first_origin: str, step_days: int, horizon: int) 
     return list(pd.date_range(pd.Timestamp(first_origin), last_ok, freq=f"{step_days}D"))
 
 
-def _one_origin(y: pd.Series, origin: pd.Timestamp, horizon: int, names: list[str], train_start: str | None) -> list[dict]:
+def _one_origin(y: pd.Series, origin: pd.Timestamp, horizon: int, names: list[str], train_start: str | None, weather=None) -> list[dict]:
     hist = y.loc[:origin]
-    preds = models.run_models(hist, horizon, names, train_start=train_start)
+    preds = models.run_models(hist, horizon, names, train_start=train_start, weather=weather)
     truth = y.reindex(preds[names[0]].index)
     rows = []
     for name, f in preds.items():
@@ -27,10 +27,10 @@ def _one_origin(y: pd.Series, origin: pd.Timestamp, horizon: int, names: list[st
 
 
 def run_backtest(y: pd.Series, origins: list[pd.Timestamp], horizon: int, names: list[str], *, train_start: str | None = None,
-                 workers: int = 4, log=print) -> pd.DataFrame:
+                 workers: int = 4, log=print, weather: pd.DataFrame | None = None) -> pd.DataFrame:
     rows: list[dict] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futs = [pool.submit(_one_origin, y, o, horizon, names, train_start) for o in origins]
+        futs = [pool.submit(_one_origin, y, o, horizon, names, train_start, weather) for o in origins]
         for i, f in enumerate(futs, 1):
             rows += f.result()
             if i % 10 == 0 or i == len(futs):

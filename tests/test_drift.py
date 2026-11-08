@@ -53,3 +53,11 @@ def test_year_over_year_adjustment_cancels_recurring_calendar_effects():
     raw, adj = drift.surprise(y).loc["2023-01-15":], drift.adjusted_surprise(y).loc["2023-01-15":]
     window = lambda s: s[(s.index.month == 1) & (s.index.day >= 9) & (s.index.day <= 31)].abs().mean()   # the weeks AFTER the dip
     assert window(adj) < 0.6 * window(raw)
+
+
+def test_a_zero_ridership_day_is_a_large_finite_surprise_not_nan(weekly_series):
+    y = weekly_series.copy()
+    y.loc["2023-03-14"] = 0.0                                   # a full service suspension
+    s = drift.surprise(y)
+    assert np.isfinite(s.loc["2023-03-14"]) and s.loc["2023-03-14"] <= -3.0 + 1e-9
+    assert drift.detect(y, 0.5, 6.0).loc["2023-03-14":"2023-03-16"].shape[0] >= 1      # and it raises an alarm

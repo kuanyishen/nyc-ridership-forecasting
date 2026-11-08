@@ -1,0 +1,1110 @@
+{
+ "weather": {
+  "station": "USW00094728",
+  "start": "2020-03-01",
+  "end": "2026-11-04",
+  "n_days": 2440,
+  "snow_days_1in": 30,
+  "storm_days_6in": 6
+ },
+ "effects": {
+  "Subway": {
+   "n_days": 1750,
+   "snow_effects": [
+    {
+     "inches": 2.0,
+     "pct": -0.003934502563525496,
+     "lo": -0.07499289677651493,
+     "hi": 0.0725825474484656
+    },
+    {
+     "inches": 6.0,
+     "pct": -0.2590731226278451,
+     "lo": -0.3360060991263499,
+     "hi": -0.1732263852271212
+    },
+    {
+     "inches": 11.0,
+     "pct": -0.5460432036993372,
+     "lo": -0.6611282333235871,
+     "hi": -0.3918738792295343
+    }
+   ],
+   "per_inch_rain": {
+    "pct": -0.04798471074629164,
+    "se": 0.0071189430026912
+   },
+   "per_degree_below_25F": {
+    "pct": 0.0013559900225679894,
+    "se": 0.009133610430628408
+   }
+  },
+  "Bus": {
+   "n_days": 1750,
+   "snow_effects": [
+    {
+     "inches": 2.0,
+     "pct": -0.05983354428098047,
+     "lo": -0.1301366342279338,
+     "hi": 0.01615150061495796
+    },
+    {
+     "inches": 6.0,
+     "pct": -0.33067258573194963,
+     "lo": -0.4089244238855844,
+     "hi": -0.2420610737533937
+    },
+    {
+     "inches": 11.0,
+     "pct": -0.600032759175564,
+     "lo": -0.7078926673224201,
+     "hi": -0.4523458474447572
+    }
+   ],
+   "per_inch_rain": {
+    "pct": -0.05725735924766636,
+    "se": 0.007479884783944224
+   },
+   "per_degree_below_25F": {
+    "pct": -0.012051515234883872,
+    "se": 0.010060953934843646
+   }
+  },
+  "LIRR": {
+   "n_days": 1750,
+   "snow_effects": [
+    {
+     "inches": 2.0,
+     "pct": 0.009596994832673702,
+     "lo": -0.11142959934104542,
+     "hi": 0.1471078613684113
+    },
+    {
+     "inches": 6.0,
+     "pct": -0.4458020287130245,
+     "lo": -0.5886592839228736,
+     "hi": -0.2533309264696971
+    },
+    {
+     "inches": 11.0,
+     "pct": -0.7976656144761519,
+     "lo": -0.9130762462168583,
+     "hi": -0.5290216795348167
+    }
+   ],
+   "per_inch_rain": {
+    "pct": -0.04844735352005481,
+    "se": 0.009426170181457007
+   },
+   "per_degree_below_25F": {
+    "pct": 0.015562199835966765,
+    "se": 0.015676780944209972
+   }
+  },
+  "MNR": {
+   "n_days": 1750,
+   "snow_effects": [
+    {
+     "inches": 2.0,
+     "pct": 0.03126446700615315,
+     "lo": -0.05794801405533638,
+     "hi": 0.12892538498608483
+    },
+    {
+     "inches": 6.0,
+     "pct": -0.3263803536557378,
+     "lo": -0.4313611297305685,
+     "hi": -0.2020182726411801
+    },
+    {
+     "inches": 11.0,
+     "pct": -0.6771400427708816,
+     "lo": -0.8028852191119688,
+     "hi": -0.47117840928834426
+    }
+   ],
+   "per_inch_rain": {
+    "pct": -0.0653215814489947,
+    "se": 0.011224705070323896
+   },
+   "per_degree_below_25F": {
+    "pct": 0.005977379521806785,
+    "se": 0.013437545999730937
+   }
+  },
+  "BT": {
+   "n_days": 1750,
+   "snow_effects": [
+    {
+     "inches": 2.0,
+     "pct": -0.02298367154480702,
+     "lo": -0.11610344853390521,
+     "hi": 0.07994640830396016
+    },
+    {
+     "inches": 6.0,
+     "pct": -0.31469310522836796,
+     "lo": -0.4241988159739375,
+     "hi": -0.18436162854385654
+    },
+    {
+     "inches": 11.0,
+     "pct": -0.6130937769676275,
+     "lo": -0.767565886432987,
+     "hi": -0.35596189765829245
+    }
+   ],
+   "per_inch_rain": {
+    "pct": -0.03132496851584776,
+    "se": 0.004858776644266681
+   },
+   "per_degree_below_25F": {
+    "pct": 0.006606234409646804,
+    "se": 0.0072195342069173215
+   }
+  }
+ },
+ "storms": [
+  {
+   "date": "2020-12-16",
+   "weekday": "Wednesday",
+   "snow": 6.5,
+   "snwd": 0.0,
+   "pct": {
+    "Subway": -0.07752622509696072,
+    "Bus": -0.17239584393529195,
+    "LIRR": -0.1424343368828045,
+    "MNR": -0.1119693162280122,
+    "BT": -0.029986895152424142
+   }
+  },
+  {
+   "date": "2020-12-17",
+   "weekday": "Thursday",
+   "snow": 4.0,
+   "snwd": 9.1,
+   "pct": {
+    "Subway": -0.38182723738972635,
+    "Bus": -0.5074534876887817,
+    "LIRR": -0.7180860866131368,
+    "MNR": -0.664214010963237,
+    "BT": -0.6167419748886902
+   }
+  },
+  {
+   "date": "2021-02-01",
+   "weekday": "Monday",
+   "snow": 14.8,
+   "snwd": 5.1,
+   "pct": {
+    "Subway": -0.6268741699145028,
+    "Bus": -0.6507425247810331,
+    "LIRR": -0.8798713754594979,
+    "MNR": -0.6626495941082936,
+    "BT": -0.6761186170786431
+   }
+  },
+  {
+   "date": "2021-02-07",
+   "weekday": "Sunday",
+   "snow": 4.5,
+   "snwd": 5.9,
+   "pct": {
+    "Subway": -0.13242204015859216,
+    "Bus": -0.23493184944354129,
+    "LIRR": -0.28297537977998954,
+    "MNR": -0.21750980337625492,
+    "BT": -0.285440733781157
+   }
+  },
+  {
+   "date": "2022-01-07",
+   "weekday": "Friday",
+   "snow": 5.8,
+   "snwd": 5.9,
+   "pct": {
+    "Subway": -0.10460522942808126,
+    "Bus": -0.16972922336904483,
+    "LIRR": -0.2591378906779348,
+    "MNR": -0.29153677964211777,
+    "BT": -0.31434209120820167
+   }
+  },
+  {
+   "date": "2022-01-29",
+   "weekday": "Saturday",
+   "snow": 7.3,
+   "snwd": 5.9,
+   "pct": {
+    "Subway": -0.31568940895478237,
+    "Bus": -0.5483826506296197,
+    "LIRR": -0.8450869031650446,
+    "MNR": -0.5200191852796582,
+    "BT": -0.6089458925830971
+   }
+  },
+  {
+   "date": "2026-01-25",
+   "weekday": "Sunday",
+   "snow": 11.4,
+   "snwd": 1.0,
+   "pct": {
+    "Subway": -0.5810905191679187,
+    "Bus": -0.6733474630753342,
+    "LIRR": -0.6778452072402386,
+    "MNR": -0.6690642316023792,
+    "BT": -0.5580770559665365
+   }
+  },
+  {
+   "date": "2026-02-22",
+   "weekday": "Sunday",
+   "snow": 8.8,
+   "snwd": 0.0,
+   "pct": {
+    "Subway": -0.23257774954272814,
+    "Bus": -0.12873120045654796,
+    "LIRR": -0.18430080795525172,
+    "MNR": -0.13316436792337683,
+    "BT": -0.048625632057179735
+   }
+  },
+  {
+   "date": "2026-02-23",
+   "weekday": "Monday",
+   "snow": 10.9,
+   "snwd": 14.0,
+   "pct": {
+    "Subway": -0.739112109304947,
+    "Bus": -0.798335566191375,
+    "LIRR": -1.0,
+    "MNR": -0.8797211962349577,
+    "BT": -0.8606259511326493
+   }
+  }
+ ],
+ "alarms": [
+  {
+   "series": "Subway",
+   "date": "2026-01-26",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 11.4,
+   "snow_depth": 9.0,
+   "prcp": 0.02,
+   "tmax": 27.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "Subway",
+   "date": "2026-02-23",
+   "direction": "down",
+   "snow_today": 10.9,
+   "snow_yesterday": 8.8,
+   "snow_depth": 14.0,
+   "prcp": 1.06,
+   "tmax": 35.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "Bus",
+   "date": "2024-09-17",
+   "direction": "up",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 79.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "Bus",
+   "date": "2024-09-24",
+   "direction": "up",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 68.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "Bus",
+   "date": "2025-01-22",
+   "direction": "up",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 1.2,
+   "prcp": 0.0,
+   "tmax": 20.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "Bus",
+   "date": "2026-01-25",
+   "direction": "down",
+   "snow_today": 11.4,
+   "snow_yesterday": 0.0,
+   "snow_depth": 1.0,
+   "prcp": 1.8,
+   "tmax": 22.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "Bus",
+   "date": "2026-01-27",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 8.0,
+   "prcp": 0.0,
+   "tmax": 22.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "Bus",
+   "date": "2026-02-04",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 6.0,
+   "prcp": 0.0,
+   "tmax": 33.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "Bus",
+   "date": "2026-02-23",
+   "direction": "down",
+   "snow_today": 10.9,
+   "snow_yesterday": 8.8,
+   "snow_depth": 14.0,
+   "prcp": 1.06,
+   "tmax": 35.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-01-25",
+   "direction": "down",
+   "snow_today": 11.4,
+   "snow_yesterday": 0.0,
+   "snow_depth": 1.0,
+   "prcp": 1.8,
+   "tmax": 22.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-01-26",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 11.4,
+   "snow_depth": 9.0,
+   "prcp": 0.02,
+   "tmax": 27.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-02-23",
+   "direction": "down",
+   "snow_today": 10.9,
+   "snow_yesterday": 8.8,
+   "snow_depth": 14.0,
+   "prcp": 1.06,
+   "tmax": 35.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-02-24",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 10.9,
+   "snow_depth": 14.0,
+   "prcp": 0.0,
+   "tmax": 31.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-03-23",
+   "direction": "up",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.4,
+   "tmax": 50.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-05-16",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 80.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-05-17",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 87.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-05-18",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 88.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-05-19",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 93.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-06-08",
+   "direction": "up",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.0,
+   "tmax": 75.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-09-27",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 1.58,
+   "tmax": 63.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "MNR",
+   "date": "2026-01-25",
+   "direction": "down",
+   "snow_today": 11.4,
+   "snow_yesterday": 0.0,
+   "snow_depth": 1.0,
+   "prcp": 1.8,
+   "tmax": 22.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "MNR",
+   "date": "2026-01-26",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 11.4,
+   "snow_depth": 9.0,
+   "prcp": 0.02,
+   "tmax": 27.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "MNR",
+   "date": "2026-02-23",
+   "direction": "down",
+   "snow_today": 10.9,
+   "snow_yesterday": 8.8,
+   "snow_depth": 14.0,
+   "prcp": 1.06,
+   "tmax": 35.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "MNR",
+   "date": "2026-03-22",
+   "direction": "up",
+   "snow_today": 0.0,
+   "snow_yesterday": 0.0,
+   "snow_depth": 0.0,
+   "prcp": 0.15,
+   "tmax": 63.0,
+   "weather_event": false,
+   "removed_by_weather_adjustment": true
+  },
+  {
+   "series": "BT",
+   "date": "2026-01-26",
+   "direction": "down",
+   "snow_today": 0.0,
+   "snow_yesterday": 11.4,
+   "snow_depth": 9.0,
+   "prcp": 0.02,
+   "tmax": 27.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  },
+  {
+   "series": "BT",
+   "date": "2026-02-23",
+   "direction": "down",
+   "snow_today": 10.9,
+   "snow_yesterday": 8.8,
+   "snow_depth": 14.0,
+   "prcp": 1.06,
+   "tmax": 35.0,
+   "weather_event": true,
+   "removed_by_weather_adjustment": false
+  }
+ ],
+ "monitor": {
+  "Subway": {
+   "h_before": 24.5,
+   "h_after": 15.0,
+   "alarms_before": [
+    "2026-01-26",
+    "2026-02-23"
+   ],
+   "alarms_after": [
+    "2025-01-06",
+    "2026-01-26",
+    "2026-02-23",
+    "2026-04-09"
+   ],
+   "rate_before": 0.8543859649122808,
+   "rate_after": 1.7087719298245616,
+   "injection_after": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 3.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.875,
+     "median_delay_days": 9.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.2916666666666667,
+     "median_delay_days": 13.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.9166666666666666,
+     "median_delay_days": 9.5
+    }
+   ]
+  },
+  "Bus": {
+   "h_before": 16.0,
+   "h_after": 15.5,
+   "alarms_before": [
+    "2024-09-17",
+    "2024-09-24",
+    "2025-01-22",
+    "2026-01-25",
+    "2026-01-27",
+    "2026-02-04",
+    "2026-02-23"
+   ],
+   "alarms_after": [
+    "2024-09-17",
+    "2024-09-23",
+    "2025-01-22",
+    "2025-10-09",
+    "2026-01-26",
+    "2026-02-01",
+    "2026-02-24"
+   ],
+   "rate_before": 2.9903508771929825,
+   "rate_after": 2.9903508771929825,
+   "injection_after": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 5.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.4583333333333333,
+     "median_delay_days": 13.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.3333333333333333,
+     "median_delay_days": 16.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.7083333333333334,
+     "median_delay_days": 10.0
+    }
+   ]
+  },
+  "LIRR": {
+   "h_before": 19.5,
+   "h_after": 13.0,
+   "alarms_before": [
+    "2026-01-25",
+    "2026-01-26",
+    "2026-02-23",
+    "2026-02-24",
+    "2026-03-23",
+    "2026-05-16",
+    "2026-05-17",
+    "2026-05-18",
+    "2026-05-19",
+    "2026-06-08",
+    "2026-09-27"
+   ],
+   "alarms_after": [
+    "2024-09-30",
+    "2026-01-06",
+    "2026-01-26",
+    "2026-02-22",
+    "2026-02-23",
+    "2026-02-24",
+    "2026-03-15",
+    "2026-05-16",
+    "2026-05-17",
+    "2026-05-18",
+    "2026-05-19",
+    "2026-06-08",
+    "2026-06-15",
+    "2026-09-27"
+   ],
+   "rate_before": 4.688156359393232,
+   "rate_after": 5.966744457409567,
+   "injection_after": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 4.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.9166666666666666,
+     "median_delay_days": 10.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.375,
+     "median_delay_days": 14.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.75,
+     "median_delay_days": 11.0
+    }
+   ]
+  },
+  "MNR": {
+   "h_before": 23.5,
+   "h_after": 15.5,
+   "alarms_before": [
+    "2026-01-25",
+    "2026-01-26",
+    "2026-02-23",
+    "2026-03-22"
+   ],
+   "alarms_after": [
+    "2026-01-07",
+    "2026-01-26",
+    "2026-02-23"
+   ],
+   "rate_before": 1.704784130688448,
+   "rate_after": 1.278588098016336,
+   "injection_after": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 5.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 0.75,
+     "median_delay_days": 11.5
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.20833333333333334,
+     "median_delay_days": 15.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 0.6666666666666666,
+     "median_delay_days": 11.5
+    }
+   ]
+  },
+  "BT": {
+   "h_before": 24.5,
+   "h_after": 14.0,
+   "alarms_before": [
+    "2026-01-26",
+    "2026-02-23"
+   ],
+   "alarms_after": [
+    "2025-01-12",
+    "2026-01-26",
+    "2026-02-23",
+    "2026-03-04",
+    "2026-03-16",
+    "2026-04-09",
+    "2026-09-27"
+   ],
+   "rate_before": 0.852392065344224,
+   "rate_after": 2.9833722287047837,
+   "injection_after": [
+    {
+     "delta": -0.2,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 2.0
+    },
+    {
+     "delta": -0.1,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 6.0
+    },
+    {
+     "delta": -0.05,
+     "n": 24,
+     "detected_share": 0.5416666666666666,
+     "median_delay_days": 12.0
+    },
+    {
+     "delta": 0.1,
+     "n": 24,
+     "detected_share": 1.0,
+     "median_delay_days": 6.0
+    }
+   ]
+  }
+ },
+ "storm_fit": [
+  {
+   "series": "Subway",
+   "date": "2026-01-25",
+   "actual": -0.5810905191679187,
+   "predicted": -0.4511417558113549
+  },
+  {
+   "series": "Subway",
+   "date": "2026-01-26",
+   "actual": -0.49459653877961773,
+   "predicted": -0.04327634570758116
+  },
+  {
+   "series": "Subway",
+   "date": "2026-02-22",
+   "actual": -0.2325777495427281,
+   "predicted": -0.2593422773322494
+  },
+  {
+   "series": "Subway",
+   "date": "2026-02-23",
+   "actual": -0.739112109304947,
+   "predicted": -0.45511114461668606
+  },
+  {
+   "series": "Bus",
+   "date": "2026-01-25",
+   "actual": -0.6733474630753342,
+   "predicted": -0.5071244109924669
+  },
+  {
+   "series": "Bus",
+   "date": "2026-01-26",
+   "actual": -0.5751591172067685,
+   "predicted": -0.08078453192559137
+  },
+  {
+   "series": "Bus",
+   "date": "2026-02-22",
+   "actual": -0.12873120045654796,
+   "predicted": -0.2856232648084561
+  },
+  {
+   "series": "Bus",
+   "date": "2026-02-23",
+   "actual": -0.798335566191375,
+   "predicted": -0.5175481376089407
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-01-25",
+   "actual": -0.6778452072402386,
+   "predicted": -0.7170301301293529
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-01-26",
+   "actual": -0.7658731372300595,
+   "predicted": -0.12355763663215166
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-02-22",
+   "actual": -0.18430080795525172,
+   "predicted": -0.47877013837815124
+  },
+  {
+   "series": "LIRR",
+   "date": "2026-02-23",
+   "actual": -0.950212931632136,
+   "predicted": -0.7419845362772711
+  },
+  {
+   "series": "MNR",
+   "date": "2026-01-25",
+   "actual": -0.6690642316023792,
+   "predicted": -0.5332066379734857
+  },
+  {
+   "series": "MNR",
+   "date": "2026-01-26",
+   "actual": -0.7726099697420924,
+   "predicted": -0.07616292015983199
+  },
+  {
+   "series": "MNR",
+   "date": "2026-02-22",
+   "actual": -0.13316436792337683,
+   "predicted": -0.29959230423211275
+  },
+  {
+   "series": "MNR",
+   "date": "2026-02-23",
+   "actual": -0.8797211962349577,
+   "predicted": -0.5362787440273331
+  },
+  {
+   "series": "BT",
+   "date": "2026-01-25",
+   "actual": -0.5580770559665365,
+   "predicted": -0.4831425213557845
+  },
+  {
+   "series": "BT",
+   "date": "2026-01-26",
+   "actual": -0.7046246600871376,
+   "predicted": -0.14326843361273253
+  },
+  {
+   "series": "BT",
+   "date": "2026-02-22",
+   "actual": -0.048625632057179735,
+   "predicted": -0.27649505646055356
+  },
+  {
+   "series": "BT",
+   "date": "2026-02-23",
+   "actual": -0.8606259511326493,
+   "predicted": -0.5421705920357888
+  }
+ ],
+ "oracle": {
+  "n_bad_weather_days": 160,
+  "wape": {
+   "xgboost": {
+    "all": 0.0433377928306143,
+    "bad_weather": 0.10021286557553445,
+    "calm": 0.04088919763286844
+   },
+   "xgboost_wx3": {
+    "all": 0.04183292761034509,
+    "bad_weather": 0.08552742018514303,
+    "calm": 0.039951784966951336
+   },
+   "xgboost_wx": {
+    "all": 0.040852869226222825,
+    "bad_weather": 0.0688848472113396,
+    "calm": 0.03964603179525348
+   }
+  },
+  "paired": {
+   "Subway|xgboost_wx3": {
+    "series": "Subway",
+    "a": "xgboost_wx3",
+    "b": "xgboost",
+    "wape_diff": -0.0014428327765274446,
+    "lo": -0.002620363713950373,
+    "hi": -0.0002800871336587735,
+    "p_value": 0.017,
+    "n_origins": 48
+   },
+   "Subway|xgboost_wx": {
+    "series": "Subway",
+    "a": "xgboost_wx",
+    "b": "xgboost",
+    "wape_diff": -0.0021211325789994503,
+    "lo": -0.004366292824835687,
+    "hi": 0.00030508739876982386,
+    "p_value": 0.079,
+    "n_origins": 48
+   },
+   "Bus|xgboost_wx3": {
+    "series": "Bus",
+    "a": "xgboost_wx3",
+    "b": "xgboost",
+    "wape_diff": -0.002517085175172115,
+    "lo": -0.0036807530447396817,
+    "hi": -0.0013647691722415175,
+    "p_value": 0.0,
+    "n_origins": 48
+   },
+   "Bus|xgboost_wx": {
+    "series": "Bus",
+    "a": "xgboost_wx",
+    "b": "xgboost",
+    "wape_diff": -0.0046077233280889945,
+    "lo": -0.007304338480133071,
+    "hi": -0.0019116673983097996,
+    "p_value": 0.0015,
+    "n_origins": 48
+   },
+   "LIRR|xgboost_wx3": {
+    "series": "LIRR",
+    "a": "xgboost_wx3",
+    "b": "xgboost",
+    "wape_diff": -0.0011719346659877436,
+    "lo": -0.0025382742130018138,
+    "hi": 0.00014282611518882666,
+    "p_value": 0.086,
+    "n_origins": 48
+   },
+   "LIRR|xgboost_wx": {
+    "series": "LIRR",
+    "a": "xgboost_wx",
+    "b": "xgboost",
+    "wape_diff": -0.0011306710525778169,
+    "lo": -0.004009514981962982,
+    "hi": 0.0016176761312419973,
+    "p_value": 0.438,
+    "n_origins": 48
+   },
+   "MNR|xgboost_wx3": {
+    "series": "MNR",
+    "a": "xgboost_wx3",
+    "b": "xgboost",
+    "wape_diff": -0.0012181761965330412,
+    "lo": -0.0023190256089372563,
+    "hi": -0.00013649551101945618,
+    "p_value": 0.0285,
+    "n_origins": 48
+   },
+   "MNR|xgboost_wx": {
+    "series": "MNR",
+    "a": "xgboost_wx",
+    "b": "xgboost",
+    "wape_diff": -0.0016884481299211732,
+    "lo": -0.004874778685979184,
+    "hi": 0.0017552089776690122,
+    "p_value": 0.3145,
+    "n_origins": 48
+   },
+   "BT|xgboost_wx3": {
+    "series": "BT",
+    "a": "xgboost_wx3",
+    "b": "xgboost",
+    "wape_diff": -0.0005977673957052974,
+    "lo": -0.001324989554536892,
+    "hi": 0.00010506223970580953,
+    "p_value": 0.1005,
+    "n_origins": 48
+   },
+   "BT|xgboost_wx": {
+    "series": "BT",
+    "a": "xgboost_wx",
+    "b": "xgboost",
+    "wape_diff": -0.0016136697594940526,
+    "lo": -0.0036414013088749584,
+    "hi": 0.00041523792884907637,
+    "p_value": 0.121,
+    "n_origins": 48
+   }
+  },
+  "by_series": {
+   "xgboost": {
+    "Subway": 0.04382220240219934,
+    "Bus": 0.051029460171417816,
+    "LIRR": 0.05035419449950866,
+    "MNR": 0.05239171474937877,
+    "BT": 0.02866969908434741
+   },
+   "xgboost_wx3": {
+    "Subway": 0.042379369625671896,
+    "Bus": 0.0485123749962457,
+    "LIRR": 0.04918225983352092,
+    "MNR": 0.05117353855284573,
+    "BT": 0.028071931688642113
+   },
+   "xgboost_wx": {
+    "Subway": 0.04170106982319989,
+    "Bus": 0.04642173684332882,
+    "LIRR": 0.049223523446930845,
+    "MNR": 0.0507032666194576,
+    "BT": 0.02705602932485336
+   }
+  }
+ }
+}

@@ -11,11 +11,13 @@
    "alarms_out_of_sample": [
     {
      "date": "2026-01-26",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-02-23",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     }
    ],
    "false_alarm_rate_per_year": 0.8543859649122808,
@@ -54,31 +56,38 @@
    "alarms_out_of_sample": [
     {
      "date": "2024-09-17",
-     "direction": "up"
+     "direction": "up",
+     "weather_event": false
     },
     {
      "date": "2024-09-24",
-     "direction": "up"
+     "direction": "up",
+     "weather_event": false
     },
     {
      "date": "2025-01-22",
-     "direction": "up"
+     "direction": "up",
+     "weather_event": false
     },
     {
      "date": "2026-01-25",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-01-27",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-02-04",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-02-23",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     }
    ],
    "false_alarm_rate_per_year": 2.9903508771929825,
@@ -117,34 +126,61 @@
    "alarms_out_of_sample": [
     {
      "date": "2026-01-25",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-01-26",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
+    },
+    {
+     "date": "2026-02-23",
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-02-24",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
-     "date": "2026-03-22",
-     "direction": "up"
+     "date": "2026-03-23",
+     "direction": "up",
+     "weather_event": false
+    },
+    {
+     "date": "2026-05-16",
+     "direction": "down",
+     "weather_event": false
+    },
+    {
+     "date": "2026-05-17",
+     "direction": "down",
+     "weather_event": false
+    },
+    {
+     "date": "2026-05-18",
+     "direction": "down",
+     "weather_event": false
     },
     {
      "date": "2026-05-19",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": false
     },
     {
      "date": "2026-06-08",
-     "direction": "up"
+     "direction": "up",
+     "weather_event": false
     },
     {
      "date": "2026-09-27",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     }
    ],
-   "false_alarm_rate_per_year": 2.9833722287047837,
+   "false_alarm_rate_per_year": 4.688156359393232,
    "tuning_target_per_year": 1.0,
    "injection": [
     {
@@ -168,14 +204,15 @@
     {
      "delta": 0.1,
      "n": 24,
-     "detected_share": 0.625,
+     "detected_share": 0.6666666666666666,
      "median_delay_days": 13.0
     }
    ],
    "recent_alarms": [
     {
      "date": "2026-09-27",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     }
    ],
    "last_data_date": "2026-11-05"
@@ -185,19 +222,23 @@
    "alarms_out_of_sample": [
     {
      "date": "2026-01-25",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-01-26",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-02-23",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-03-22",
-     "direction": "up"
+     "direction": "up",
+     "weather_event": false
     }
    ],
    "false_alarm_rate_per_year": 1.704784130688448,
@@ -236,11 +277,13 @@
    "alarms_out_of_sample": [
     {
      "date": "2026-01-26",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     },
     {
      "date": "2026-02-23",
-     "direction": "down"
+     "direction": "down",
+     "weather_event": true
     }
    ],
    "false_alarm_rate_per_year": 0.852392065344224,

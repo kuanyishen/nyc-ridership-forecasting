@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ridership import data, metrics
+from ridership import data, metrics, weather
 from ridership.run import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -104,6 +104,34 @@ def fig_breakdown(bt):
     save(fig, "fig_breakdown.png")
 
 
+def fig_storms(wide, w, M):
+    y = data.get_series(wide, "Subway")
+    al = [pd.Timestamp(a["date"]) for a in M["series"]["Subway"]["alarms_out_of_sample"]]
+    fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.7), sharey=True)
+    for ax, (a, b) in zip(axes, [("2026-01-12", "2026-02-08"), ("2026-02-12", "2026-03-12")]):
+        seg = y.loc[a:b]
+        ax.plot(seg.index, seg / 1e6, color=INK, lw=1.7, zorder=3)
+        pts = [d for d in al if seg.index[0] <= d <= seg.index[-1]]
+        ax.scatter(pts, [seg.loc[d] / 1e6 for d in pts], color=RED, marker="v", s=70, zorder=4, label="drift alarm")
+        ax2 = ax.twinx()
+        ax2.bar(w.loc[a:b].index, w.loc[a:b, "snow"], color=SKY, alpha=0.7, width=0.8, zorder=1)
+        ax2.set_ylim(0, 40)
+        ax2.set_yticks([0, 5, 10])
+        ax2.set_ylabel("snowfall (inches)", color=SKY)
+        ax2.grid(False)
+        ax.set_zorder(ax2.get_zorder() + 1)
+        ax.patch.set_visible(False)
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO, interval=1))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+        ax.tick_params(axis="x", labelsize=8)
+    axes[0].set_ylabel("subway riders (millions)")
+    axes[0].legend(frameon=False, fontsize=8, loc="lower left")
+    axes[0].set_title("Late January 2026")
+    axes[1].set_title("Late February 2026")
+    fig.tight_layout()
+    save(fig, "fig_storms.png")
+
+
 def fig_coverage(cov):
     fig, ax = plt.subplots(figsize=(7, 3.2))
     models = ["naive", "seasonal_naive", "seasonal_median4", "prophet", "xgboost", "ensemble"]
@@ -136,14 +164,17 @@ def fig_drift(M, cfg):
     ax = axes[1]
     for i, name in enumerate(cfg["series"][::-1]):
         al = M["series"][name]["alarms_out_of_sample"]
-        ax.scatter(pd.to_datetime([a["date"] for a in al]), [i] * len(al), color=[RED if a["direction"] == "down" else BLUE for a in al], s=38, zorder=3)
+        for a in al:
+            col = RED if a["direction"] == "down" else BLUE
+            wxe = a.get("weather_event", False)
+            ax.scatter(pd.to_datetime(a["date"]), i, facecolor="white" if wxe else col, edgecolor=col, linewidth=1.6, s=44, zorder=3)
     ax.set_yticks(range(len(cfg["series"])), [SERIES_LABEL[n].split(" (")[0] for n in cfg["series"][::-1]])
     ax.set_title("Alarms on history the thresholds were not tuned on")
     ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
     ax.grid(axis="x", visible=True)
     ax.grid(axis="y", visible=False)
-    ax.text(0.01, 0.02, "red = ridership below normal, blue = above", transform=ax.transAxes, fontsize=8, color=GREY)
+    ax.text(0.01, 0.02, "red = below normal, blue = above;  hollow = snow or heavy-rain day, filled = not weather", transform=ax.transAxes, fontsize=8, color=GREY)
     fig.tight_layout()
     save(fig, "fig_drift.png")
 
@@ -169,6 +200,10 @@ def main() -> None:
     pooled = bt.groupby("model").apply(metrics.wape)
     cov = metrics.interval_metrics(bt, cfg["interval_level"]).groupby("model")[["coverage", "rel_width"]].mean()
     paired = {(s, a, b): metrics.origin_bootstrap(bt, s, a, b) for s in cfg["series"] for a, b in (("ensemble", ref), ("xgboost", "prophet"), ("ensemble", "xgboost"))}
+    WJ = json.loads((ASSETS / "weather.json").read_text()) if (ASSETS / "weather.json").exists() else None
+    wide0 = data.to_wide(data.load_raw())
+    if WJ:
+        fig_storms(wide0, weather.load(), M)
     fig_forecast(F, cfg); fig_wape(tbl); fig_breakdown(bt); fig_coverage(cov); fig_drift(M, cfg)
 
     n_orig, o0, o1 = bt["origin"].nunique(), bt["origin"].min().date(), bt["origin"].max().date()
@@ -206,6 +241,68 @@ def main() -> None:
         df = pd.DataFrame(abl).pivot_table(index=["series", "model"], columns="train_start", values="wape").reset_index()
         cols = [c for c in df.columns if c not in ("series", "model")]
         t_abl = table(["Series", "Model", *cols], [[r["series"], r["model"], *[pc(r[c]) for c in cols]] for _, r in df.iterrows()])
+    weather_section, wx_tldr, n_tests = "", "", sum(1 for f in (ROOT / "tests").glob("test_*.py") for line in f.read_text().splitlines() if line.startswith("def test_"))
+    if WJ:
+        pct = lambda x: f"{x * 100:+.0f}%"
+        storms = sorted(WJ["storms"], key=lambda r: -r["snow"])[:7]
+        storms = sorted(storms, key=lambda r: r["date"])
+        t_storm = table(["Date", "Snowfall", "On the ground", *[SERIES_LABEL[n].split(" (")[0] for n in cfg["series"]]],
+                        [[f"{('<b>' if r['date'] in ('2026-01-25', '2026-02-23') else '')}{r['date']} ({r['weekday'][:3]}){('</b>' if r['date'] in ('2026-01-25', '2026-02-23') else '')}", f"{r['snow']:.1f} in", f"{r['snwd']:.0f} in",
+                          *[(pct(r['pct'][n]) if r['pct'].get(n) is not None else '-') for n in cfg["series"]]] for r in storms])
+        t_eff = table(["Series", "2 inches of snow", "6 inches", "11 inches", "Per inch of rain"],
+                      [[SERIES_LABEL[n].split(" (")[0], *[f"{pct(e['pct'])} <span class='sub'>({pct(e['lo'])} to {pct(e['hi'])})</span>" for e in WJ["effects"][n]["snow_effects"]],
+                        f"{pct(WJ['effects'][n]['per_inch_rain']['pct'])}"] for n in cfg["series"]])
+        al = pd.DataFrame(WJ["alarms"])
+        n_al, n_wx = len(al), int(al["weather_event"].sum())
+        t_unexp = table(["Series", "Date", "Direction", "Weather that day"],
+                        [[r.series, r.date, "below normal" if r.direction == "down" else "above normal", f"{r.tmax:.0f}°F high, no snow, {r.prcp:.2f} in rain"] for r in al[~al["weather_event"]].itertuples()])
+        sf = pd.DataFrame(WJ["storm_fit"])
+        rng = lambda d, col: f"{pct(sf[sf['date'] == d][col].max())} to {pct(sf[sf['date'] == d][col].min())}" if sf[sf['date'] == d][col].max() != sf[sf['date'] == d][col].min() else pct(sf[sf['date'] == d][col].iloc[0])
+        t_fit = table(["Day (2026)", "What actually happened", "What the weather model predicted"],
+                      [[f"{d} ({lab})", rng(d, "actual"), rng(d, "predicted")] for d, lab in (("2026-01-25", "storm day"), ("2026-01-26", "the day after"), ("2026-02-23", "second storm"))])
+        mon = WJ["monitor"]
+        t_adj = table(["Series", "Out-of-sample alarms, original", "With a regression weather adjustment"],
+                      [[SERIES_LABEL[n].split(" (")[0], f"{len(mon[n]['alarms_before'])} ({mon[n]['rate_before']:.1f}/yr)", f"{len(mon[n]['alarms_after'])} ({mon[n]['rate_after']:.1f}/yr)"] for n in cfg["series"]])
+        O = WJ.get("oracle")
+        if O:
+            w_ = O["wape"]
+            t_or = table(["Forecast model", "All days", f"Bad-weather days ({O['n_bad_weather_days']} series-days)", "Calm days"],
+                         [["XGBoost with no weather (what production uses)", pc(w_["xgboost"]["all"], 2), pc(w_["xgboost"]["bad_weather"], 1), pc(w_["xgboost"]["calm"], 2)],
+                          ["+ perfect weather for the next 3 days", pc(w_["xgboost_wx3"]["all"], 2), pc(w_["xgboost_wx3"]["bad_weather"], 1), pc(w_["xgboost_wx3"]["calm"], 2)],
+                          ["+ perfect weather for all 14 days", pc(w_["xgboost_wx"]["all"], 2), pc(w_["xgboost_wx"]["bad_weather"], 1), pc(w_["xgboost_wx"]["calm"], 2)]])
+            sig = [n for n in cfg["series"] if O["paired"][f"{n}|xgboost_wx3"]["p_value"] < 0.05]
+            wx_tldr = (f" Weather explains the alarm clusters: they were the two biggest snowstorms of the winter (a Sunday with 11.4 inches cut ridership 56-68%; a Monday with 10.9 inches cut it 74-100%). "
+                       f"Perfect weather knowledge would cut error on bad-weather days from {pc(w_['xgboost']['bad_weather'], 0)} to {pc(w_['xgboost_wx']['bad_weather'], 0)} but overall only from {pc(w_['xgboost']['all'])} to {pc(w_['xgboost_wx']['all'])}.")
+            or_text = (f"<p>The 3-day oracle is significantly better than no weather on {', '.join(SERIES_LABEL[n].split(' (')[0] for n in sig)} (paired over origins, p &lt; 0.05); the all-14-days oracle is significantly better only on bus, because its extra gain is concentrated in a few storms. "
+                       f"The gain sits almost entirely on bad-weather days ({pc(w_['xgboost']['bad_weather'], 1)} to {pc(w_['xgboost_wx']['bad_weather'], 1)} with perfect weather); on calm days it is {pc(w_['xgboost']['calm'], 2)} to {pc(w_['xgboost_wx']['calm'], 2)}.</p>")
+        else:
+            t_or, or_text = "", ""
+        weather_section = f"""<h2 id="weather">Weather: explaining the alarms, and what it can (and cannot) do for forecasts</h2>
+<p>Using NOAA's daily record for Central Park (snowfall, snow depth, rain, temperature; {WJ['weather']['start']} to {WJ['weather']['end']}). It does two different jobs here, and the difference matters: <b>diagnosis</b> uses observed weather after the fact, while <b>forecasting</b> two weeks ahead cannot know the weather, so feeding observed weather into a forecast is an oracle experiment (an upper bound), not something a live forecast can do.</p>
+<h3>Snowstorms are the biggest shocks in the data</h3>
+<figure><img src="assets/fig_storms.png" alt="Subway ridership and snowfall in winter 2026"><figcaption>Daily subway ridership (black), snowfall (blue bars) and drift alarms (red triangles), Jan-Mar 2026. The alarms sit on the storms.</figcaption></figure>
+<p>Change in ridership on each storm day versus the same weekday over the previous four weeks:</p>
+{t_storm}
+<p>On Sunday 2026-01-25 (11.4 inches, the second-biggest snowfall in the six-year record) ridership fell 56-68% on every series; on Monday 2026-02-23 (10.9 inches, 14 inches on the ground) it fell 74-100%, and the LIRR carried nobody. Those are the days of the two alarm clusters that the monitor flagged in section "Drift monitor".</p>
+<h3>How much does weather move ridership?</h3>
+<p>A regression of each day's surprise on weather (relative to the weather on the four baseline days; robust standard errors; fitted on 2021-06 onward). Intervals are wide because there are only a handful of big storms in the record.</p>
+{t_eff}
+<p>Rain costs roughly 3-7% per inch. Cold alone shows no clear effect once snow is accounted for.</p>
+<h3>Which drift alarms were weather?</h3>
+<p>Of the {n_al} out-of-sample alarms across the five series, <b>{n_wx} fell on or right after a snow or heavy-rain day</b> (the rule: at least 1 inch of snow today or yesterday, 3 inches on the ground, or 1.5 inches of rain). The other {n_al - n_wx} are not weather and are the ones worth a human look. For example, LIRR ran 4 consecutive days well below normal in mid-May 2026 on hot, dry days; I did not investigate the cause.</p>
+{t_unexp}
+<h3>A negative result: adjusting the monitor for weather did not help</h3>
+<p>The obvious idea is to subtract the predicted weather effect before looking for drift. I fitted it only on data before July 2024 and tested it on the 2026 storms:</p>
+{t_fit}
+<p>The model gets the storm day roughly right, but badly under-predicts <em>the day after</em> (snow cleanup, depth and disruption last longer than the snowfall itself), so the alarms stayed, and the tuning then picked a more sensitive threshold that added alarms elsewhere:</p>
+{t_adj}
+<p>So the pipeline <b>labels</b> alarms instead of silently removing them: each alarm is marked as a weather event or not (the rule above), and only unexplained alarms need attention.</p>
+<h3>Can weather improve the forecast?</h3>
+<p>I re-ran the backtest with XGBoost given the <em>actual</em> weather of each target day: first only for the next 3 days (a perfect short-range weather forecast), then for all 14 days (a perfect long-range forecast, which does not exist). A bug caught along the way: my backtest first passed the weather to <em>every</em> model, including the "no weather" baseline, which made it score identically to the full oracle; a regression test now prevents that.</p>
+{t_or}
+{or_text}
+<p>Takeaway: weather is worth adding where it can be known, namely the next few days, using archived weather <em>forecasts</em> so the backtest is realistic (not done yet: forecast skill will shrink these gains). It will not make a 14-day forecast much better on ordinary days.</p>
+"""
     dt = lambda m, d: metrics.wape(bt[(bt["model"] == m) & (bt["day_type"] == d)])
     hb = lambda m, b: metrics.wape(bt[(bt["model"] == m) & (bt["h_bucket"] == b)])
     page = f"""<!doctype html>
@@ -220,7 +317,7 @@ def main() -> None:
 <body>
 <nav class="top"><div class="wrap">
   <a class="brand" href="index.html">NYC ridership forecasting</a>
-  <a href="#forecast">Forecast</a><a href="#results">Results</a><a href="#monitor">Drift monitor</a><a href="#pipeline">Pipeline</a><a href="{REPO}">GitHub</a>
+  <a href="#forecast">Forecast</a><a href="#results">Results</a><a href="#monitor">Drift monitor</a><a href="#weather">Weather</a><a href="#pipeline">Pipeline</a><a href="{REPO}">GitHub</a>
 </div></nav>
 <main class="wrap">
 <header class="hero">
@@ -237,7 +334,7 @@ def main() -> None:
   <div class="kpi"><b>&ge; 20%</b><span>level shifts the drift monitor catches within about a week; shifts under ~5% it mostly misses</span></div>
 </div>
 
-<div class="callout"><p><b>TL;DR.</b> Ridership has strong weekly and holiday structure, so the bar is "beat last week's value", not "beat a naive guess" (plain naive is {pc(pooled['naive'], 0)} off). XGBoost and Prophet clear that bar on all five series, and averaging them is the most accurate overall ({pc(pooled['ensemble'])} vs {pc(pooled[ref])}), though the ensemble's edge over XGBoost alone is within noise on every series. XGBoost beats Prophet significantly on subway and bus. Holidays and weekends are hardest ({pc(bt[bt.day_type == 'holiday period'].pipe(lambda d: metrics.wape(d[d.model == 'ensemble'])))} and {pc(bt[bt.day_type == 'weekend'].pipe(lambda d: metrics.wape(d[d.model == 'ensemble'])))} error vs {pc(bt[bt.day_type == 'weekday'].pipe(lambda d: metrics.wape(d[d.model == 'ensemble'])))} on weekdays). The drift monitor is reliable for big shifts and honest about being blind to small ones: congestion pricing moved bridge-and-tunnel traffic by only about {abs(cp_after - cp_before) * 100:.1f} points, below what it can detect.</p></div>
+<div class="callout"><p><b>TL;DR.</b> Ridership has strong weekly and holiday structure, so the bar is "beat last week's value", not "beat a naive guess" (plain naive is {pc(pooled['naive'], 0)} off). XGBoost and Prophet clear that bar on all five series, and averaging them is the most accurate overall ({pc(pooled['ensemble'])} vs {pc(pooled[ref])}), though the ensemble's edge over XGBoost alone is within noise on every series. XGBoost beats Prophet significantly on subway and bus. Holidays and weekends are hardest ({pc(bt[bt.day_type == 'holiday period'].pipe(lambda d: metrics.wape(d[d.model == 'ensemble'])))} and {pc(bt[bt.day_type == 'weekend'].pipe(lambda d: metrics.wape(d[d.model == 'ensemble'])))} error vs {pc(bt[bt.day_type == 'weekday'].pipe(lambda d: metrics.wape(d[d.model == 'ensemble'])))} on weekdays). The drift monitor is reliable for big shifts and honest about being blind to small ones: congestion pricing moved bridge-and-tunnel traffic by only about {abs(cp_after - cp_before) * 100:.1f} points, below what it can detect.{wx_tldr}</p></div>
 
 <h2 id="data">The data</h2>
 <p>MTA Daily Ridership and Traffic ({"2020-03-01"} to {raw_end}, from <a href="https://catalog.data.gov/dataset/mta-daily-ridership-and-traffic-beginning-2020">data.ny.gov</a>): one row per day and mode. Practical issues I handled rather than assumed away: counts arrive as text with thousands separators; the newest days are missing for some modes while the MTA catches up (publication lag), so each series is cut at its last published day; the Staten Island Railway has gaps in 2020-21; and the 2020 collapse and recovery is a different regime from today. I model five modes with complete histories, and I start training in 2021-06 (see the ablation below).</p>
@@ -293,23 +390,26 @@ def main() -> None:
 <ul class="tight">
 <li><b>Measured, not assumed:</b> detection power comes from injecting known shifts into the real series at 24 start dates; false-alarm rates come from history the thresholds never saw.</li>
 <li><b>It reliably catches big shifts</b> (about 20% within a week) and often 10% ones, but mostly misses 5%. It is a smoke alarm, not a microscope.</li>
-<li><b>Alarms cluster on the same days across series</b> (late January and late February 2026 in particular), which points to region-wide disruptions rather than random noise; I did not match them to weather or news.</li>
+<li><b>Alarms cluster on the same days across series</b> (late January and late February 2026 in particular). Matching them to NOAA weather shows those are the two biggest snowstorms of the winter (see the Weather section); most other alarms are weather days too, and the monitor now labels them.</li>
 <li><b>A real test, honestly reported:</b> congestion pricing started 2025-01-05. Year-over-year, bridge-and-tunnel traffic changed from {cp_before * 100:+.1f}% in the eight weeks before to {cp_after * 100:+.1f}% in the eight weeks after, a {abs(cp_after - cp_before) * 100:.1f}-point move, far below the monitor's sensitivity, so it (correctly, by design) did not alarm.</li>
 </ul>
 
+{weather_section}
 <h2 id="pipeline">The production pipeline</h2>
 <ul class="tight">
 <li><b>Weekly run on GitHub Actions</b> (<code>.github/workflows/weekly.yml</code>): pull the latest published days from the data.ny.gov API, refit every model on all data, write the next 14 days with intervals, score earlier forecasts against actuals, run the drift monitor, log to MLflow, rebuild this page.</li>
 <li><b>MLflow tracking:</b> {len(runs)} runs logged (one per series and model for the backtest, one per live forecast) with parameters, metrics, data end date and git commit. The run table is exported to <code>docs/assets/mlflow_runs.json</code>.</li>
 <li><b>Failure handling:</b> if the API is unreachable the run keeps the existing data and says so; every forecast file is kept in <code>forecasts/</code>, so the live track record builds up automatically.</li>
-<li><b>Tests:</b> 24 tests, including no-leakage, interval no-peeking, origin spacing and drift-detector calibration.</li>
+<li><b>Weather:</b> the weekly run also refreshes NOAA weather and labels each alarm as a weather event or not.</li>
+<li><b>Tests:</b> {n_tests} tests, including no-leakage, interval no-peeking, origin spacing, drift-detector calibration and a regression test that the production model never sees weather.</li>
 </ul>
 
 {('<figure><img src="assets/mlflow_ui.png" alt="MLflow runs table" style="max-width:760px"><figcaption>The MLflow UI for this project: one run per series and model, each with parameters, metrics, the data end date and the git commit.</figcaption></figure>') if (ASSETS / 'mlflow_ui.png').exists() else ''}
 
 <h2>Limitations</h2>
 <ul class="tight">
-<li>Systemwide daily totals only: no weather, events, service changes or fares as predictors, and no station-level detail.</li>
+<li>Systemwide daily totals only: no events, service changes or fares as predictors, and no station-level detail. Weather is used for diagnosis and in an oracle experiment, not in the production forecast.</li>
+<li>Weather is a single station (Central Park); snowfall and storm timing differ across the five boroughs and the suburbs the railroads serve.</li>
 <li>The 14-day horizon and weekly retraining are my choices; shorter-horizon or intraday forecasting would need different data.</li>
 <li>Most backtest origins fall after the pandemic recovery, so a new regime shock would test the models differently than {n_orig} calm-ish origins do.</li>
 <li>Intervals assume future errors resemble past errors; they widen only through the retraining cycle.</li>

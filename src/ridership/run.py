@@ -20,7 +20,7 @@ import pandas as pd
 import yaml
 
 from . import backtest as bt_mod
-from . import data, drift, intervals, metrics, models, tracking
+from . import data, drift, intervals, metrics, models, tracking, weather as wx
 
 ROOT = Path(__file__).resolve().parents[2]
 PROCESSED = ROOT / "data" / "processed"
@@ -52,7 +52,23 @@ def cmd_backtest(args: argparse.Namespace) -> None:
     print(f"wrote {out} ({len(bt):,} forecasts)")
 
 
+def fetch_weather() -> None:
+    """Refresh the NOAA weather file; failures are reported but never stop the weekly run."""
+    try:
+        new = wx.fetch_latest()
+    except Exception as e:
+        print(f"weather fetch failed ({type(e).__name__}: {e}); keeping the existing file")
+        return
+    old = wx.load() if wx.RAW_PATH.exists() else None
+    if old is None or not old.equals(new):
+        wx.save(new)
+        print(f"weather updated: {len(new):,} days through {new.index[-1].date()}")
+    else:
+        print("weather: no change")
+
+
 def cmd_fetch(args: argparse.Namespace) -> None:
+    fetch_weather()
     existing = data.load_raw()
     try:
         new = data.fetch_latest()
@@ -119,6 +135,7 @@ def cmd_monitor(args: argparse.Namespace) -> None:
     k, tune_start, tune_end, oos_start = 0.5, "2023-01-01", "2024-06-30", "2024-07-01"
     out: dict = {"k": k, "tuning_window": [tune_start, tune_end], "evaluation_start": oos_start, "series": {}}
     deltas = [-0.2, -0.1, -0.05, 0.1]
+    events = wx.is_weather_event(wx.load()) if wx.RAW_PATH.exists() else pd.Series(dtype=bool)     # weather labels for alarms, when available
     for name in cfg["series"]:
         y = data.get_series(wide, name)
         h = drift.tune_h(y, k, tune_start, tune_end, target_per_year=1.0)
@@ -128,9 +145,9 @@ def cmd_monitor(args: argparse.Namespace) -> None:
         starts = list(pd.date_range("2024-09-02", y.index[-1] - pd.Timedelta(days=35), periods=24).normalize())
         inj = [drift.injection_test(y, d, starts, k, h) for d in deltas]
         recent = al.loc[y.index[-60]:]
-        out["series"][name] = {"h": h, "alarms_out_of_sample": [{"date": str(d.date()), "direction": r["alarm"]} for d, r in oos.iterrows()],
+        out["series"][name] = {"h": h, "alarms_out_of_sample": [{"date": str(d.date()), "direction": r["alarm"], "weather_event": bool(events.get(d, False))} for d, r in oos.iterrows()],
                                "false_alarm_rate_per_year": len(oos) / years, "tuning_target_per_year": 1.0, "injection": inj,
-                               "recent_alarms": [{"date": str(d.date()), "direction": r["alarm"]} for d, r in recent.iterrows()],
+                               "recent_alarms": [{"date": str(d.date()), "direction": r["alarm"], "weather_event": bool(events.get(d, False))} for d, r in recent.iterrows()],
                                "last_data_date": str(y.index[-1].date())}
     live = live_evaluation(wide)
     out["live"] = {"n_forecast_files": len(list(FORECASTS.glob("*.csv"))), "status": "no live forecasts have matured yet"}
@@ -156,6 +173,24 @@ def cmd_track(args: argparse.Namespace) -> None:
                           kind="backtest", data_end=str(bt["date"].max().date()), tracking_uri=MLFLOW_URI)
     ASSETS.mkdir(parents=True, exist_ok=True)
     print(f"logged {n} backtest runs; exported {tracking.export_runs(MLFLOW_URI, ASSETS / 'mlflow_runs.json')} runs to docs/assets/mlflow_runs.json")
+
+
+def cmd_weather_backtest(args: argparse.Namespace) -> None:
+    """ORACLE experiment: how much would knowing the actual weather help? (Not deployable: future weather is unknown.)"""
+    cfg = load_config()
+    wide = data.to_wide(data.load_raw())
+    weather_df = wx.load()
+    frames, t0 = [], time.time()
+    for name in cfg["series"]:
+        y = data.get_series(wide, name)
+        origins = bt_mod.make_origins(y, cfg["backtest"]["first_origin"], cfg["backtest"]["step_days"], cfg["horizon"])
+        origins = [o for o in origins if o + pd.Timedelta(days=cfg["horizon"]) <= weather_df.index[-1]]     # weather must cover every target day
+        frames.append(bt_mod.run_backtest(y, origins, cfg["horizon"], ["xgboost", "xgboost_wx3", "xgboost_wx"], train_start=cfg["train_start"],
+                                          workers=args.workers, log=lambda *_: None, weather=weather_df))
+        print(f"{name}: done in {time.time() - t0:.0f}s", flush=True)
+    out = PROCESSED / "backtest_weather.csv"
+    pd.concat(frames, ignore_index=True).to_csv(out, index=False)
+    print("wrote", out)
 
 
 def cmd_ablation(args: argparse.Namespace) -> None:
@@ -189,6 +224,9 @@ def main() -> None:
     b.add_argument("--series", nargs="*")
     b.add_argument("--workers", type=int, default=4)
     b.set_defaults(fn=cmd_backtest)
+    wb = sub.add_parser("weather-backtest")
+    wb.add_argument("--workers", type=int, default=4)
+    wb.set_defaults(fn=cmd_weather_backtest)
     ab = sub.add_parser("ablation")
     ab.add_argument("--workers", type=int, default=4)
     ab.set_defaults(fn=cmd_ablation)

@@ -20,7 +20,7 @@
      "weather_event": true
     }
    ],
-   "false_alarm_rate_per_year": 0.8543859649122808,
+   "false_alarm_rate_per_year": 0.8454861111111112,
    "tuning_target_per_year": 1.0,
    "injection": [
     {
@@ -33,23 +33,23 @@
      "delta": -0.1,
      "n": 24,
      "detected_share": 0.4166666666666667,
-     "median_delay_days": 13.5
+     "median_delay_days": 12.0
     },
     {
      "delta": -0.05,
      "n": 24,
      "detected_share": 0.08333333333333333,
-     "median_delay_days": 15.5
+     "median_delay_days": 9.5
     },
     {
      "delta": 0.1,
      "n": 24,
      "detected_share": 0.6666666666666666,
-     "median_delay_days": 12.5
+     "median_delay_days": 17.0
     }
    ],
    "recent_alarms": [],
-   "last_data_date": "2026-11-03"
+   "last_data_date": "2026-11-12"
   },
   "Bus": {
    "h": 16.0,
@@ -90,36 +90,36 @@
      "weather_event": true
     }
    ],
-   "false_alarm_rate_per_year": 2.9903508771929825,
+   "false_alarm_rate_per_year": 2.959201388888889,
    "tuning_target_per_year": 1.0,
    "injection": [
     {
      "delta": -0.2,
      "n": 24,
-     "detected_share": 0.9583333333333334,
+     "detected_share": 1.0,
      "median_delay_days": 7.0
     },
     {
      "delta": -0.1,
      "n": 24,
-     "detected_share": 0.25,
-     "median_delay_days": 11.5
+     "detected_share": 0.4166666666666667,
+     "median_delay_days": 14.0
     },
     {
      "delta": -0.05,
      "n": 24,
-     "detected_share": 0.25,
-     "median_delay_days": 17.5
+     "detected_share": 0.20833333333333334,
+     "median_delay_days": 14.0
     },
     {
      "delta": 0.1,
      "n": 24,
-     "detected_share": 0.7083333333333334,
-     "median_delay_days": 11.0
+     "detected_share": 0.625,
+     "median_delay_days": 10.0
     }
    ],
    "recent_alarms": [],
-   "last_data_date": "2026-11-03"
+   "last_data_date": "2026-11-12"
   },
   "LIRR": {
    "h": 19.5,
@@ -180,32 +180,32 @@
      "weather_event": true
     }
    ],
-   "false_alarm_rate_per_year": 4.688156359393232,
+   "false_alarm_rate_per_year": 4.650173611111111,
    "tuning_target_per_year": 1.0,
    "injection": [
     {
      "delta": -0.2,
      "n": 24,
      "detected_share": 1.0,
-     "median_delay_days": 6.0
+     "median_delay_days": 6.5
     },
     {
      "delta": -0.1,
      "n": 24,
-     "detected_share": 0.625,
-     "median_delay_days": 13.0
+     "detected_share": 0.6666666666666666,
+     "median_delay_days": 12.0
     },
     {
      "delta": -0.05,
      "n": 24,
-     "detected_share": 0.16666666666666666,
-     "median_delay_days": 18.5
+     "detected_share": 0.20833333333333334,
+     "median_delay_days": 18.0
     },
     {
      "delta": 0.1,
      "n": 24,
-     "detected_share": 0.6666666666666666,
-     "median_delay_days": 13.0
+     "detected_share": 0.5833333333333334,
+     "median_delay_days": 13.5
     }
    ],
    "recent_alarms": [
@@ -215,7 +215,7 @@
      "weather_event": true
     }
    ],
-   "last_data_date": "2026-11-05"
+   "last_data_date": "2026-11-12"
   },
   "MNR": {
    "h": 23.5,
@@ -241,7 +241,7 @@
      "weather_event": false
     }
    ],
-   "false_alarm_rate_per_year": 1.704784130688448,
+   "false_alarm_rate_per_year": 1.6909722222222223,
    "tuning_target_per_year": 1.0,
    "injection": [
     {
@@ -254,23 +254,23 @@
      "delta": -0.1,
      "n": 24,
      "detected_share": 0.4166666666666667,
-     "median_delay_days": 15.0
+     "median_delay_days": 14.0
     },
     {
      "delta": -0.05,
      "n": 24,
      "detected_share": 0.08333333333333333,
-     "median_delay_days": 13.0
+     "median_delay_days": 9.0
     },
     {
      "delta": 0.1,
      "n": 24,
-     "detected_share": 0.4583333333333333,
+     "detected_share": 0.4166666666666667,
      "median_delay_days": 14.0
     }
    ],
    "recent_alarms": [],
-   "last_data_date": "2026-11-05"
+   "last_data_date": "2026-11-12"
   },
   "BT": {
    "h": 24.5,
@@ -286,7 +286,7 @@
      "weather_event": true
     }
    ],
-   "false_alarm_rate_per_year": 0.852392065344224,
+   "false_alarm_rate_per_year": 0.8454861111111112,
    "tuning_target_per_year": 1.0,
    "injection": [
     {
@@ -298,28 +298,33 @@
     {
      "delta": -0.1,
      "n": 24,
-     "detected_share": 0.875,
+     "detected_share": 0.8333333333333334,
      "median_delay_days": 11.0
     },
     {
      "delta": -0.05,
      "n": 24,
-     "detected_share": 0.16666666666666666,
-     "median_delay_days": 17.0
+     "detected_share": 0.20833333333333334,
+     "median_delay_days": 15.0
     },
     {
      "delta": 0.1,
      "n": 24,
      "detected_share": 0.9583333333333334,
-     "median_delay_days": 11.0
+     "median_delay_days": 12.0
     }
    ],
    "recent_alarms": [],
-   "last_data_date": "2026-11-05"
+   "last_data_date": "2026-11-12"
   }
  },
  "live": {
-  "n_forecast_files": 1,
-  "status": "no live forecasts have matured yet"
+  "n_forecast_files": 2,
+  "status": "scored",
+  "recent_wape": 0.038463965375942454,
+  "threshold": 0.0799441018074232,
+  "alert": false,
+  "backtest_median": 0.03746272588387996,
+  "n_scored_forecasts": 39
  }
 }
